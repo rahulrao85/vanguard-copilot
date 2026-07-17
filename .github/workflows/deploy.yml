@@ -17,10 +17,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e
-            cd /home/ubuntu/vanguard-copilot
-            git pull origin main
+            script: |
+              set -e
+              cd /home/ubuntu/vanguard-copilot
+              git checkout master
+              git pull origin master
             docker compose down --remove-orphans 2>/dev/null || true
             docker compose up -d --build
             echo "Deploy complete. Checking container..."
