@@ -9,7 +9,4 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SQLITE_DB_PATH=/data/vanguard.db
     volumes:
-      - vanguard-data:/data
-
-volumes:
-  vanguard-data:
+      - /home/ubuntu/vanguard-data:/data
