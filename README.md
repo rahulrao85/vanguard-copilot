@@ -26,6 +26,16 @@ Vanguard Co-Pilot helps FIFA World Cup 2026 stadium volunteers manage their shif
 
 Built for **PromptWars: Virtual** by Google for Developers and Hack2skill.
 
+## Traceability
+
+| Phase | Endpoint | Description |
+|-------|----------|-------------|
+| **Understand** | `POST /api/calculate` | Computes crowd density and gate status from raw sensor data |
+| **Track** | `POST /api/entries` | Logs volunteer shift activity and incident reports |
+| **Track** | `GET /api/entries/{device_id}` | Retrieves activity history per anonymous device |
+| **Reduce** | `POST /api/insights` | Generates AI-powered megaphone scripts for crowd routing, translations, and alerts |
+| **Operate** | `GET /health` | Health check for load balancers and monitoring |
+
 ## Features
 
 - **Volunteer Dashboard** — Quick-entry forms to log hours and tasks
