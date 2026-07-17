@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 30
     rate_limit_window: str = "1 minute"
 
-    sqlite_db_path: str = "/data/vanguard.db"
+    sqlite_db_path: str = "/app/data/vanguard.db"
 
     max_payload_bytes: int = 65536  # 64 KB
 

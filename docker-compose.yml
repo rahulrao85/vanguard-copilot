@@ -7,6 +7,4 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SQLITE_DB_PATH=/data/vanguard.db
-    volumes:
-      - /home/ubuntu/vanguard-data:/data
+      - SQLITE_DB_PATH=/app/data/vanguard.db

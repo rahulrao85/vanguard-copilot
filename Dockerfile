@@ -16,7 +16,7 @@ FROM python:3.12-slim AS backend
 
 WORKDIR /app
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser && mkdir -p /data && chown appuser:appuser /data
+RUN groupadd -r appuser && useradd -r -g appuser appuser && mkdir -p /app/data && chown appuser:appuser /app/data
 
 COPY backend/requirements.txt ./
 
