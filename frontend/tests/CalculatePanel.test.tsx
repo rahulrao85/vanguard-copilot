@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { CalculateResponse, GateStatus } from '../src/types';
 
 const { mockStore } = vi.hoisted(() => ({
@@ -121,5 +121,132 @@ describe('CalculatePanel', () => {
     const clearBtn = screen.getByRole('button', { name: /Clear Results/i });
     clearBtn.click();
     expect(mockStore.clearResult).toHaveBeenCalled();
+  });
+
+  it('submits form with gate data', () => {
+    render(<CalculatePanel />);
+    fireEvent.change(screen.getByLabelText('Gate 1 sensor count'), {
+      target: { value: '800' },
+    });
+    fireEvent.change(screen.getByLabelText('Gate 1 capacity'), {
+      target: { value: '2000' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Calculate Density/i }));
+    expect(mockStore.calculateCrowd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gates: expect.arrayContaining([
+          expect.objectContaining({ sensor_count: 800, capacity: 2000 }),
+        ]),
+      }),
+    );
+  });
+
+  it('adds a second gate row', () => {
+    render(<CalculatePanel />);
+    expect(screen.getAllByLabelText(/^Gate \d+ identifier$/)).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: /\+ Add Gate/i }));
+    expect(screen.getAllByLabelText(/^Gate \d+ identifier$/)).toHaveLength(2);
+  });
+
+  it('removes a gate row when multiple exist', () => {
+    render(<CalculatePanel />);
+    fireEvent.click(screen.getByRole('button', { name: /\+ Add Gate/i }));
+    expect(screen.getAllByLabelText(/^Gate \d+ identifier$/)).toHaveLength(2);
+
+    const removeButtons = screen.getAllByRole('button', { name: /Remove gate/i });
+    fireEvent.click(removeButtons[0]);
+    expect(screen.getAllByLabelText(/^Gate \d+ identifier$/)).toHaveLength(1);
+  });
+
+  it('changes gate id selection', () => {
+    render(<CalculatePanel />);
+    const gateSelect = screen.getByLabelText('Gate 1 identifier') as HTMLSelectElement;
+    const options = Array.from(gateSelect.options).map((o) => o.value).filter(Boolean);
+    expect(options.length).toBeGreaterThan(0);
+    if (options.length > 1) {
+      fireEvent.change(gateSelect, { target: { value: options[1] } });
+      expect(gateSelect.value).toBe(options[1]);
+    }
+  });
+
+  it('changing stadium resets gate rows', () => {
+    render(<CalculatePanel />);
+    fireEvent.change(screen.getByLabelText('Stadium'), {
+      target: { value: 'azteca' },
+    });
+    expect((screen.getByLabelText('Stadium') as HTMLSelectElement).value).toBe('azteca');
+    expect(screen.getAllByLabelText(/^Gate \d+ identifier$/)).toHaveLength(1);
+  });
+
+  it('handles submission errors gracefully', async () => {
+    mockStore.calculateCrowd = vi.fn().mockRejectedValue(new Error('calc failed'));
+    render(<CalculatePanel />);
+    fireEvent.click(screen.getByRole('button', { name: /Calculate Density/i }));
+    await vi.waitFor(() => {
+      expect(mockStore.calculateCrowd).toHaveBeenCalled();
+    });
+  });
+
+  it('renders Critical status badge for high density gates', () => {
+    mockStore.calculateResult = {
+      ...mockResult,
+      overall_density_percent: 90,
+      gates: [
+        { gate_id: 'gate-a', density_percent: 90, status: 'critical', recommendation: 'Emergency redirect!' },
+      ],
+    };
+    render(<CalculatePanel />);
+    expect(screen.getByText('Critical')).toBeInTheDocument();
+    expect(screen.getByLabelText('gate-a density 90 percent')).toBeInTheDocument();
+  });
+
+  it('renders Clear status badge for low density gates', () => {
+    mockStore.calculateResult = {
+      ...mockResult,
+      overall_density_percent: 15,
+      gates: [
+        { gate_id: 'gate-a', density_percent: 15, status: 'clear', recommendation: 'All good.' },
+      ],
+    };
+    render(<CalculatePanel />);
+    expect(screen.getByText('Clear')).toBeInTheDocument();
+  });
+
+  it('renders Busy status badge for high density', () => {
+    mockStore.calculateResult = {
+      ...mockResult,
+      overall_density_percent: 70,
+      gates: [
+        { gate_id: 'gate-a', density_percent: 70, status: 'busy', recommendation: 'Open more lanes.' },
+      ],
+    };
+    render(<CalculatePanel />);
+    expect(screen.getByText('Busy')).toBeInTheDocument();
+  });
+
+  it('renders results with overall density at critical threshold', () => {
+    mockStore.calculateResult = {
+      ...mockResult,
+      overall_density_percent: 85,
+      total_people: 4250,
+      total_capacity: 5000,
+      gates: [
+        { gate_id: 'gate-a', density_percent: 85, status: 'critical', recommendation: 'Critical!' },
+      ],
+    };
+    render(<CalculatePanel />);
+    expect(screen.getByLabelText('Overall density 85 percent')).toBeInTheDocument();
+  });
+
+  it('renders results with overall density at moderate threshold', () => {
+    mockStore.calculateResult = {
+      ...mockResult,
+      overall_density_percent: 45,
+      gates: [
+        { gate_id: 'gate-a', density_percent: 45, status: 'moderate', recommendation: 'Watch closely.' },
+      ],
+    };
+    render(<CalculatePanel />);
+    expect(screen.getByLabelText('Overall density 45 percent')).toBeInTheDocument();
   });
 });

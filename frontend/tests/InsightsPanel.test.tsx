@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { InsightsResponse } from '../src/types';
 import type { Mock } from 'vitest';
 
@@ -104,5 +104,139 @@ describe('InsightsPanel', () => {
   it('renders submit button', () => {
     render(<InsightsPanel />);
     expect(screen.getByRole('button', { name: /Generate Insights/i })).toBeInTheDocument();
+  });
+
+  it('submits form with entered data', async () => {
+    render(<InsightsPanel />);
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'Gate A overcrowded' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+    expect(mockStore.generateInsights).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input_text: 'Gate A overcrowded',
+        context_type: 'crowd_routing',
+        target_language: 'en',
+      }),
+    );
+  });
+
+  it('changing context type and language updates submission', () => {
+    render(<InsightsPanel />);
+    fireEvent.change(screen.getByLabelText('Context Type'), {
+      target: { value: 'fan_translation' },
+    });
+    fireEvent.change(screen.getByLabelText('Target Language'), {
+      target: { value: 'es' },
+    });
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'Where is the exit?' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+    expect(mockStore.generateInsights).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context_type: 'fan_translation',
+        target_language: 'es',
+      }),
+    );
+  });
+
+  it('toggles gate data section and includes gate data when enabled', () => {
+    render(<InsightsPanel />);
+    const toggle = screen.getByRole('button', { name: /Add Gate Data/i });
+    fireEvent.click(toggle);
+    expect(screen.getByText('- Hide Gate Data')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'test' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+    expect(mockStore.generateInsights).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gate_data: expect.arrayContaining([
+          expect.objectContaining({ sensor_count: 0, capacity: 1000 }),
+        ]),
+      }),
+    );
+  });
+
+  it('omits gate_data when gate section is hidden', () => {
+    render(<InsightsPanel />);
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'test' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+    const call = mockStore.generateInsights.mock.calls[0][0];
+    expect(call.gate_data).toBeUndefined();
+  });
+
+  it('adds and removes gate rows', () => {
+    render(<InsightsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: /Add Gate Data/i }));
+    expect(screen.getAllByLabelText(/^Insight gate \d+ identifier$/)).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: '+ Add Gate' }));
+    expect(screen.getAllByLabelText(/^Insight gate \d+ identifier$/)).toHaveLength(2);
+
+    const removeButtons = screen.getAllByRole('button', { name: /Remove insight gate/i });
+    fireEvent.click(removeButtons[0]);
+    expect(screen.getAllByLabelText(/^Insight gate \d+ identifier$/)).toHaveLength(1);
+  });
+
+  it('updates gate row fields', () => {
+    render(<InsightsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: /Add Gate Data/i }));
+
+    fireEvent.change(screen.getByLabelText('Insight gate 1 sensor count'), {
+      target: { value: '500' },
+    });
+    fireEvent.change(screen.getByLabelText('Insight gate 1 capacity'), {
+      target: { value: '2000' },
+    });
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'test' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+
+    const call = mockStore.generateInsights.mock.calls[0][0];
+    expect(call.gate_data[0]).toMatchObject({ sensor_count: 500, capacity: 2000 });
+  });
+
+  it('changes selected stadium resets gate rows', () => {
+    render(<InsightsPanel />);
+    fireEvent.change(screen.getByLabelText('Stadium'), {
+      target: { value: 'azteca' },
+    });
+    expect((screen.getByLabelText('Stadium') as HTMLSelectElement).value).toBe('azteca');
+  });
+
+  it('changes gate id selection', () => {
+    render(<InsightsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: /Add Gate Data/i }));
+    const gateSelect = screen.getByLabelText('Insight gate 1 identifier');
+    const options = Array.from((gateSelect as HTMLSelectElement).options).map((o) => o.value).filter(Boolean);
+    if (options.length > 1) {
+      fireEvent.change(gateSelect, { target: { value: options[1] } });
+      expect((gateSelect as HTMLSelectElement).value).toBe(options[1]);
+    }
+  });
+
+  it('handles submission errors gracefully', async () => {
+    mockStore.generateInsights = vi.fn().mockRejectedValue(new Error('API error'));
+    render(<InsightsPanel />);
+    fireEvent.change(screen.getByLabelText('Input Context / Query'), {
+      target: { value: 'test' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Generate Insights/i }));
+    await vi.waitFor(() => {
+      expect(mockStore.generateInsights).toHaveBeenCalled();
+    });
+  });
+
+  it('clears insights when Clear button clicked', () => {
+    mockStore.insightResult = mockResult;
+    render(<InsightsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: /Clear/i }));
+    expect(mockStore.clearInsights).toHaveBeenCalled();
   });
 });

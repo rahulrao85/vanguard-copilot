@@ -1,7 +1,8 @@
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -17,7 +18,7 @@ STATIC_DIR = Path("/app/static")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
@@ -29,11 +30,14 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 
 @app.middleware("http")
-async def security_headers_middleware(request: Request, call_next):
+async def security_headers_middleware(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -49,9 +53,19 @@ async def security_headers_middleware(request: Request, call_next):
 
 
 @app.middleware("http")
-async def body_size_limit_middleware(request: Request, call_next):
+async def body_size_limit_middleware(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
     content_length = request.headers.get("content-length")
-    if content_length and int(content_length) > MAX_PAYLOAD_BYTES:
+    try:
+        size = int(content_length) if content_length else 0
+    except ValueError:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Invalid Content-Length header", "error_code": "BAD_REQUEST"},
+        )
+    if size > MAX_PAYLOAD_BYTES:
         return JSONResponse(
             status_code=413,
             content={
@@ -80,7 +94,7 @@ app.include_router(health.router)
 
 @app.get("/", include_in_schema=False)
 @app.get("/{full_path:path}", include_in_schema=False)
-async def serve_frontend(full_path: str = ""):
+async def serve_frontend(full_path: str = "") -> Response:
     if full_path:
         first = full_path.split("/")[0]
         if first in ("api", "docs", "redoc", "openapi.json", "health"):

@@ -110,6 +110,19 @@ describe('useCrowdStore', () => {
     expect(useCrowdStore.getState().calculateResult).toBeNull();
     expect(useCrowdStore.getState().error).toBeNull();
   });
+
+  it('uses fallback message for non-Error rejection', async () => {
+    mockApiClient.calculate.mockRejectedValueOnce('string failure');
+
+    await expect(
+      useCrowdStore.getState().calculateCrowd({
+        stadium_id: 's1',
+        gates: [{ gate_id: 'g1', sensor_count: 100, capacity: 1000 }],
+      }),
+    ).rejects.toBe('string failure');
+
+    expect(useCrowdStore.getState().error).toBe('Calculation failed');
+  });
 });
 
 describe('useEntriesStore', () => {
@@ -154,11 +167,11 @@ describe('useEntriesStore', () => {
 
   it('createEntry prepends entries for multiple additions', async () => {
     mockApiClient.createEntry
-      .mockResolvedValueOnce({ entry_id: 'e1', device_id: 'vol-test1234', activity_type: 'a', description: 'first', severity: 'info', created_at: '', status: '' })
-      .mockResolvedValueOnce({ entry_id: 'e2', device_id: 'vol-test1234', activity_type: 'b', description: 'second', severity: 'info', created_at: '', status: '' });
+      .mockResolvedValueOnce({ entry_id: 'e1', device_id: 'vol-test1234', activity_type: 'crowd_report', description: 'first', severity: 'info', created_at: '', status: '' })
+      .mockResolvedValueOnce({ entry_id: 'e2', device_id: 'vol-test1234', activity_type: 'incident_log', description: 'second', severity: 'info', created_at: '', status: '' });
 
-    await useEntriesStore.getState().createEntry({ activity_type: 'a', description: 'first', severity: 'info' });
-    await useEntriesStore.getState().createEntry({ activity_type: 'b', description: 'second', severity: 'info' });
+    await useEntriesStore.getState().createEntry({ activity_type: 'crowd_report', description: 'first', severity: 'info' });
+    await useEntriesStore.getState().createEntry({ activity_type: 'incident_log', description: 'second', severity: 'info' });
 
     const entries = useEntriesStore.getState().entries;
     expect(entries).toHaveLength(2);
@@ -206,6 +219,37 @@ describe('useEntriesStore', () => {
     }
 
     expect(useEntriesStore.getState().error).toBe('Validation error');
+  });
+
+  it('createEntry uses fallback message for non-Error rejection', async () => {
+    mockApiClient.createEntry.mockRejectedValueOnce('raw string error');
+
+    await expect(
+      useEntriesStore.getState().createEntry({
+        activity_type: 'crowd_report',
+        description: 'Test',
+        severity: 'info',
+      }),
+    ).rejects.toBe('raw string error');
+
+    expect(useEntriesStore.getState().error).toBe('Failed to create entry');
+  });
+
+  it('fetchEntries uses fallback message for non-Error rejection', async () => {
+    mockApiClient.getEntries.mockRejectedValueOnce(42);
+
+    await expect(
+      useEntriesStore.getState().fetchEntries(),
+    ).rejects.toBe(42);
+
+    expect(useEntriesStore.getState().error).toBe('Failed to fetch entries');
+  });
+
+  it('fetchEntries handles missing entries field', async () => {
+    mockApiClient.getEntries.mockResolvedValueOnce({ device_id: 'd', entries: undefined, total: 0 });
+
+    await useEntriesStore.getState().fetchEntries();
+    expect(useEntriesStore.getState().entries).toEqual([]);
   });
 });
 
@@ -310,5 +354,20 @@ describe('useInsightsStore', () => {
 
     expect(useInsightsStore.getState().insightResult).toBeNull();
     expect(useInsightsStore.getState().error).toBeNull();
+  });
+
+  it('uses fallback message for non-Error rejection', async () => {
+    mockApiClient.generateInsights.mockRejectedValueOnce('plain text error');
+
+    await expect(
+      useInsightsStore.getState().generateInsights({
+        stadium_id: 's1',
+        context_type: 'crowd_routing',
+        input_text: 'Test',
+        target_language: 'en',
+      }),
+    ).rejects.toBe('plain text error');
+
+    expect(useInsightsStore.getState().error).toBe('Insight generation failed');
   });
 });

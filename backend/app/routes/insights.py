@@ -45,9 +45,13 @@ async def generate_insights(
             gate_data=payload.gate_data,
         )
 
-        recommendations = result.get("recommendations", [])
-        if isinstance(recommendations, str):
-            recommendations = [recommendations]
+        recommendations_raw = result.get("recommendations", [])
+        if isinstance(recommendations_raw, str):
+            recommendations = [recommendations_raw]
+        elif isinstance(recommendations_raw, list):
+            recommendations = [str(r) for r in recommendations_raw]
+        else:
+            recommendations = []
 
         return InsightsResponse(
             stadium_id=payload.stadium_id,
@@ -55,7 +59,7 @@ async def generate_insights(
             megaphone_script=str(result.get("megaphone_script", "")),
             reasoning=str(result.get("reasoning", "No reasoning provided.")),
             target_language=payload.target_language,
-            recommendations=[str(r) for r in recommendations],
+            recommendations=recommendations,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

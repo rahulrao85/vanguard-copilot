@@ -134,4 +134,49 @@ describe('App', () => {
     render(<App />);
     expect(await screen.findByText('Degraded')).toBeInTheDocument();
   });
+
+  it('theme toggle switches from dark to light mode', async () => {
+    render(<App />);
+    const toggleBtn = screen.getByRole('button', { name: /Switch to light mode/i });
+    expect(toggleBtn).toBeInTheDocument();
+    fireEvent.click(toggleBtn);
+    expect(screen.getByRole('button', { name: /Switch to dark mode/i })).toBeInTheDocument();
+  });
+
+  it('stadium select changes selected stadium', async () => {
+    render(<App />);
+    const select = screen.getByLabelText('Select stadium');
+    fireEvent.change(select, { target: { value: 'azteca' } });
+    expect((select as HTMLSelectElement).value).toBe('azteca');
+  });
+
+  it('health status shows Operational when healthy', async () => {
+    render(<App />);
+    expect(await screen.findByText('Operational')).toBeInTheDocument();
+  });
+
+  it('health status shows Degraded when unhealthy', async () => {
+    mockHealthError = true;
+    render(<App />);
+    expect(await screen.findByText('Degraded')).toBeInTheDocument();
+  });
+
+  it('health status shows Checking... during load', () => {
+    mockHealthStatus = null;
+    render(<App />);
+    expect(screen.getByText('Checking...')).toBeInTheDocument();
+  });
+
+  it('health dot has correct aria-label for healthy status', async () => {
+    render(<App />);
+    await screen.findByText('Operational');
+    expect(screen.getByLabelText('System healthy')).toBeInTheDocument();
+  });
+
+  it('health dot has correct aria-label for degraded status', async () => {
+    mockHealthError = true;
+    render(<App />);
+    await screen.findByText('Degraded');
+    expect(screen.getByLabelText('System degraded')).toBeInTheDocument();
+  });
 });

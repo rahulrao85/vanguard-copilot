@@ -1,6 +1,13 @@
 /** API client for Vanguard Co-Pilot backend. */
 
 import { z } from 'zod';
+import type {
+  CalculateResponse,
+  EntriesListResponse,
+  EntryResponse,
+  HealthResponse,
+  InsightsResponse,
+} from '../types';
 
 const API_BASE = '/api';
 
@@ -67,31 +74,40 @@ export class ApiClient {
   }
 
   /** Phase 1: Calculate crowd density from gate sensor data. */
-  async calculate(data: z.infer<typeof calculateRequestSchema>) {
+  async calculate(
+    data: z.infer<typeof calculateRequestSchema>,
+  ): Promise<CalculateResponse> {
     const validated = calculateRequestSchema.parse(data);
-    return this.request<any>('POST', '/calculate', validated);
+    return this.request<CalculateResponse>('POST', '/calculate', validated);
   }
 
   /** Phase 2: Save a volunteer activity entry. */
-  async createEntry(data: z.infer<typeof entryRequestSchema>) {
+  async createEntry(
+    data: z.infer<typeof entryRequestSchema>,
+  ): Promise<EntryResponse> {
     const validated = entryRequestSchema.parse(data);
-    return this.request<any>('POST', '/entries', validated);
+    return this.request<EntryResponse>('POST', '/entries', validated);
   }
 
   /** Phase 2: Retrieve entries for a device. */
-  async getEntries(deviceId: string) {
-    return this.request<any>('GET', `/entries/${encodeURIComponent(deviceId)}`);
+  async getEntries(deviceId: string): Promise<EntriesListResponse> {
+    return this.request<EntriesListResponse>(
+      'GET',
+      `/entries/${encodeURIComponent(deviceId)}`,
+    );
   }
 
   /** Phase 3: Generate AI insights via Gemini. */
-  async generateInsights(data: z.infer<typeof insightsRequestSchema>) {
+  async generateInsights(
+    data: z.infer<typeof insightsRequestSchema>,
+  ): Promise<InsightsResponse> {
     const validated = insightsRequestSchema.parse(data);
-    return this.request<any>('POST', '/insights', validated);
+    return this.request<InsightsResponse>('POST', '/insights', validated);
   }
 
   /** Check backend health. */
-  async health() {
-    return this.request<any>('GET', '/../health');
+  async health(): Promise<HealthResponse> {
+    return this.request<HealthResponse>('GET', '/../health');
   }
 }
 

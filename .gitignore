@@ -27,6 +27,7 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.gcov
+frontend/coverage/
 
 # IDE
 .idea/
@@ -51,4 +52,5 @@ Thumbs.db
 !frontend/package.json
 !backend/pyproject.toml
 
-# mypy.mypy_cache/
+# mypy
+.mypy_cache/

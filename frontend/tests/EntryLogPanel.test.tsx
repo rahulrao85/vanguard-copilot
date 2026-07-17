@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { EntryResponse } from '../src/types';
 import type { Mock } from 'vitest';
 
@@ -139,5 +139,81 @@ describe('EntryLogPanel', () => {
     expect(screen.getByText('Medical incident at concourse')).toBeInTheDocument();
     expect(screen.getByTestId('badge-crowd_report')).toBeInTheDocument();
     expect(screen.getByTestId('badge-incident_log')).toBeInTheDocument();
+  });
+
+  it('submits entry with form data and clears fields', async () => {
+    render(<EntryLogPanel />);
+    fireEvent.change(screen.getByLabelText('Activity Type'), {
+      target: { value: 'incident_log' },
+    });
+    fireEvent.change(screen.getByLabelText('Severity'), {
+      target: { value: 'critical' },
+    });
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'Medical emergency at Gate C' },
+    });
+    fireEvent.change(screen.getByLabelText('Location'), {
+      target: { value: 'Gate C' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Submit Entry/i }));
+
+    await vi.waitFor(() => {
+      expect(mockStore.createEntry).toHaveBeenCalledWith({
+        activity_type: 'incident_log',
+        severity: 'critical',
+        description: 'Medical emergency at Gate C',
+        location: 'Gate C',
+      });
+    });
+    await vi.waitFor(() => {
+      expect((screen.getByLabelText('Description') as HTMLTextAreaElement).value).toBe('');
+    });
+    expect((screen.getByLabelText('Location') as HTMLInputElement).value).toBe('');
+  });
+
+  it('omits location when left empty', async () => {
+    render(<EntryLogPanel />);
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'No location entry' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Submit Entry/i }));
+
+    await vi.waitFor(() => {
+      expect(mockStore.createEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ location: undefined }),
+      );
+    });
+  });
+
+  it('handles submission failure without clearing fields', async () => {
+    mockStore.createEntry = vi.fn().mockRejectedValue(new Error('save failed'));
+    render(<EntryLogPanel />);
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'Keep this text' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Submit Entry/i }));
+
+    await vi.waitFor(() => {
+      expect(mockStore.createEntry).toHaveBeenCalled();
+    });
+    expect((screen.getByLabelText('Description') as HTMLTextAreaElement).value).toBe('Keep this text');
+  });
+
+  it('handles fetchEntries failure on mount', () => {
+    mockStore.fetchEntries = vi.fn().mockRejectedValue(new Error('fetch failed'));
+    render(<EntryLogPanel />);
+    expect(mockStore.fetchEntries).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders entries with missing location gracefully', () => {
+    mockStore.entries = [{ ...mockEntry, location: undefined }];
+    render(<EntryLogPanel />);
+    expect(screen.getByText('Moderate crowd at Gate A')).toBeInTheDocument();
+  });
+
+  it('renders invalid timestamps without crashing', () => {
+    mockStore.entries = [{ ...mockEntry, created_at: 'not-a-date' }];
+    render(<EntryLogPanel />);
+    expect(screen.getByText('Moderate crowd at Gate A')).toBeInTheDocument();
   });
 });

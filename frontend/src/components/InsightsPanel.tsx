@@ -2,7 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { useInsightsStore } from '../store/useInsightsStore';
 import { useStadiumStore } from '../store/useStadiumStore';
 import { STADIUMS, LANGUAGES, GATES_BY_STADIUM } from '../theme';
-import type { GateData } from '../types';
+import type { GateData, InsightsRequest } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 
 const CONTEXT_OPTIONS = [
@@ -199,7 +199,7 @@ export default function InsightsPanel() {
   const { selectedStadium, setStadium } = useStadiumStore();
   const stadiumGates = GATES_BY_STADIUM[selectedStadium.id] ?? [];
   const defaultGate = stadiumGates[0];
-  const [contextType, setContextType] = useState('crowd_routing');
+  const [contextType, setContextType] = useState<InsightsRequest['context_type']>('crowd_routing');
   const [targetLanguage, setTargetLanguage] = useState('en');
   const [inputText, setInputText] = useState('');
   const [showGateData, setShowGateData] = useState(false);
@@ -302,7 +302,7 @@ export default function InsightsPanel() {
               id={contextId}
               style={S.select}
               value={contextType}
-              onChange={(e) => setContextType(e.target.value)}
+              onChange={(e) => setContextType(e.target.value as InsightsRequest['context_type'])}
               required
             >
               {CONTEXT_OPTIONS.map((c) => (

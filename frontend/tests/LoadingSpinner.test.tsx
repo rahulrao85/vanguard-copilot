@@ -42,4 +42,10 @@ describe('LoadingSpinner', () => {
     const spinnerDiv = screen.getByRole('status').firstChild as HTMLElement;
     expect(spinnerDiv).toHaveStyle({ width: '36px', height: '36px' });
   });
+
+  it('falls back to md size for unknown size prop', () => {
+    render(<LoadingSpinner size={'xl' as never} />);
+    const spinnerDiv = screen.getByRole('status').firstChild as HTMLElement;
+    expect(spinnerDiv).toHaveStyle({ width: '36px', height: '36px' });
+  });
 });

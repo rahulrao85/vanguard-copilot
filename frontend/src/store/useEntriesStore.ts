@@ -1,7 +1,7 @@
 /** Zustand store for volunteer activity log entries. */
 
 import { create } from 'zustand';
-import type { EntryResponse } from '@/types';
+import type { EntryRequest, EntryResponse } from '@/types';
 import { apiClient } from '@/api/client';
 import { getDeviceId } from '@/utils/device';
 
@@ -10,10 +10,10 @@ interface EntriesState {
   isLoading: boolean;
   error: string | null;
   createEntry: (payload: {
-    activity_type: string;
+    activity_type: EntryRequest['activity_type'];
     description: string;
     location?: string;
-    severity: string;
+    severity: EntryRequest['severity'];
   }) => Promise<void>;
   fetchEntries: () => Promise<void>;
 }
@@ -30,7 +30,7 @@ export const useEntriesStore = create<EntriesState>((set) => ({
       const result = await apiClient.createEntry({
         device_id: deviceId,
         ...payload,
-      } as any);
+      });
       set((state) => ({
         entries: [result, ...state.entries],
         isLoading: false,

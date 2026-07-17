@@ -47,7 +47,7 @@ class InMemoryRepository(AbstractRepository):
         async with self._lock:
             device_data = self._store.get(device_id, {"entries": []})
             entries_raw = device_data.get("entries", [])
-            entries = [EntryResponse(**e) for e in entries_raw]
+            entries = [EntryResponse.model_validate(e) for e in entries_raw]
 
         return EntriesListResponse(
             device_id=device_id,

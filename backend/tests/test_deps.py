@@ -5,7 +5,7 @@ Tests for dependency injection providers.
 
 from app.deps import get_gemini_service, get_repository
 from app.repository.base import AbstractRepository
-from app.repository.memory import InMemoryRepository
+from app.repository.sqlite import SqliteRepository
 from app.services.gemini import GeminiService
 
 
@@ -14,9 +14,9 @@ class TestGetRepository:
         repo = get_repository()
         assert isinstance(repo, AbstractRepository)
 
-    def test_get_repository_returns_in_memory_repository_when_no_firestore(self):
+    def test_get_repository_returns_sqlite_repository_when_no_firestore(self):
         repo = get_repository()
-        assert isinstance(repo, InMemoryRepository)
+        assert isinstance(repo, SqliteRepository)
 
     def test_get_repository_singleton_calling_twice_returns_same_instance(self):
         repo1 = get_repository()

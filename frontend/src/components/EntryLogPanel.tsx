@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { useEntriesStore } from '../store/useEntriesStore';
 import { getDeviceId } from '../utils/device';
-import type { EntryResponse } from '../types';
+import type { EntryRequest, EntryResponse } from '../types';
 import StatusBadge from './StatusBadge';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -181,8 +181,8 @@ export default function EntryLogPanel() {
 
   const deviceId = getDeviceId();
 
-  const [activityType, setActivityType] = useState('crowd_report');
-  const [severity, setSeverity] = useState('info');
+  const [activityType, setActivityType] = useState<EntryRequest['activity_type']>('crowd_report');
+  const [severity, setSeverity] = useState<EntryRequest['severity']>('info');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
 
@@ -240,7 +240,7 @@ export default function EntryLogPanel() {
             id={activityId}
             style={S.select}
             value={activityType}
-            onChange={(e) => setActivityType(e.target.value)}
+            onChange={(e) => setActivityType(e.target.value as EntryRequest['activity_type'])}
             required
           >
             {ACTIVITY_TYPES.map((at) => (
@@ -259,7 +259,7 @@ export default function EntryLogPanel() {
             id={severityId}
             style={S.select}
             value={severity}
-            onChange={(e) => setSeverity(e.target.value)}
+            onChange={(e) => setSeverity(e.target.value as EntryRequest['severity'])}
             required
           >
             {SEVERITY_OPTIONS.map((s) => (

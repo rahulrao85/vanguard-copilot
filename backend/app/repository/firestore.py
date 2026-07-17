@@ -4,10 +4,11 @@ Provides persistent, scalable storage for volunteer activity entries
 backed by Firestore (NoSQL document database).
 """
 
+import asyncio
 import uuid
 from datetime import UTC, datetime
 
-from google.cloud import firestore  # type: ignore[import-untyped]
+from google.cloud import firestore
 
 from app.config import settings
 from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse
@@ -38,24 +39,27 @@ class FirestoreRepository(AbstractRepository):
         }
 
         doc_ref = self._collection.document(entry_id)
-        doc_ref.set(doc_data)
+        await asyncio.to_thread(doc_ref.set, doc_data)
 
-        return EntryResponse(**doc_data)
+        return EntryResponse.model_validate(doc_data)
 
     async def get_entries_by_device(self, device_id: str) -> EntriesListResponse:
         """Query Firestore for all entries matching the given device_id."""
-        docs = (
-            self._collection
-            .where("device_id", "==", device_id)
-            .order_by("created_at", direction=firestore.Query.DESCENDING)
-            .stream()
-        )
+        def _query() -> list[EntryResponse]:
+            docs = (
+                self._collection
+                .where("device_id", "==", device_id)
+                .order_by("created_at", direction=firestore.Query.DESCENDING)
+                .stream()
+            )
+            results = []
+            for doc in docs:
+                data = doc.to_dict()
+                if data:
+                    results.append(EntryResponse.model_validate(data))
+            return results
 
-        entries = []
-        for doc in docs:
-            data = doc.to_dict()
-            if data:
-                entries.append(EntryResponse(**data))
+        entries = await asyncio.to_thread(_query)
 
         return EntriesListResponse(
             device_id=device_id,
@@ -66,7 +70,7 @@ class FirestoreRepository(AbstractRepository):
     async def health_check(self) -> bool:
         """Verify Firestore connectivity by pinging the collection."""
         try:
-            _ = list(self._collection.limit(1).stream())
+            _ = await asyncio.to_thread(lambda: list(self._collection.limit(1).stream()))
             return True
         except Exception:
             return False

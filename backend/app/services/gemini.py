@@ -3,10 +3,12 @@ Google Gemini AI service for generating multilingual crowd-routing scripts,
 fan query translations, and operational reasoning recommendations.
 """
 
+import asyncio
 import json
+from typing import cast
 
-from google import genai  # type: ignore[import-untyped]
-from google.genai import types  # type: ignore[import-untyped]
+from google import genai
+from google.genai import types
 
 from app.config import settings
 from app.models.schemas import GateData
@@ -70,7 +72,8 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
 """
 
         try:
-            response = self._client.models.generate_content(
+            response = await asyncio.to_thread(
+                self._client.models.generate_content,
                 model=settings.gemini_model,
                 contents=user_prompt,
                 config=types.GenerateContentConfig(
@@ -86,7 +89,7 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
                 if text.startswith("```"):
                     text = text.split("\n", 1)[1]
                     text = text.rsplit("\n```", 1)[0]
-                return json.loads(text)
+                return cast(dict[str, object], json.loads(text))
             return self._mock_response(context_type, target_language, input_text, gate_data)
 
         except Exception:

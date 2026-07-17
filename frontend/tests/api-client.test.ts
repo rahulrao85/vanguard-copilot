@@ -1,223 +1,267 @@
-import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ApiClient, apiClient } from '../src/api/client';
 
-const gateDataSchema = z.object({
-  gate_id: z.string().min(1).max(64),
-  sensor_count: z.number().int().min(0).max(100000),
-  capacity: z.number().int().min(1).max(200000),
-});
+const mockFetch = vi.fn();
+vi.stubGlobal('fetch', mockFetch);
 
-const calculateRequestSchema = z.object({
-  stadium_id: z.string().min(1).max(128),
-  gates: z.array(gateDataSchema).min(1).max(200),
-});
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
-const entryRequestSchema = z.object({
-  device_id: z.string().min(1).max(128),
-  activity_type: z.enum(['crowd_report', 'incident_log', 'shift_checkin', 'facility_issue', 'fan_assist', 'other']),
-  description: z.string().min(1).max(8192),
-  location: z.string().max(256).optional(),
-  severity: z.enum(['info', 'warning', 'critical']),
-});
+describe('ApiClient', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
 
-const insightsRequestSchema = z.object({
-  stadium_id: z.string().min(1).max(128),
-  context_type: z.enum(['crowd_routing', 'fan_translation', 'facility_alert']),
-  input_text: z.string().min(1).max(8192),
-  target_language: z.string().min(2).max(10),
-  gate_data: z.array(gateDataSchema).optional(),
-});
-
-describe('API client Zod validation', () => {
-  describe('calculateRequestSchema', () => {
-    it('validates correct payload', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        gates: [{ gate_id: 'gate-a', sensor_count: 1200, capacity: 5000 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).not.toThrow();
-      const result = calculateRequestSchema.parse(payload);
-      expect(result.stadium_id).toBe('stadium-1');
-      expect(result.gates).toHaveLength(1);
+  describe('singleton export', () => {
+    it('exports a default apiClient instance', () => {
+      expect(apiClient).toBeInstanceOf(ApiClient);
     });
 
-    it('rejects empty gates array', () => {
-      const payload = { stadium_id: 'stadium-1', gates: [] };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects negative sensor_count', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        gates: [{ gate_id: 'gate-a', sensor_count: -5, capacity: 5000 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects missing stadium_id', () => {
-      const payload = {
-        gates: [{ gate_id: 'gate-a', sensor_count: 100, capacity: 5000 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects gate with zero capacity', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        gates: [{ gate_id: 'gate-a', sensor_count: 100, capacity: 0 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects non-integer sensor_count', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        gates: [{ gate_id: 'gate-a', sensor_count: 100.5, capacity: 5000 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects sensor_count exceeding max', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        gates: [{ gate_id: 'gate-a', sensor_count: 200000, capacity: 5000 }],
-      };
-      expect(() => calculateRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects if gates array exceeds 200 entries', () => {
-      const gates = Array.from({ length: 201 }, (_, i) => ({
-        gate_id: `gate-${i}`,
-        sensor_count: 100,
-        capacity: 1000,
-      }));
-      expect(() => calculateRequestSchema.parse({ stadium_id: 's1', gates })).toThrow();
+    it('accepts a custom baseUrl', () => {
+      const client = new ApiClient('/custom');
+      expect(client).toBeInstanceOf(ApiClient);
     });
   });
 
-  describe('entryRequestSchema', () => {
-    it('validates correct payload', () => {
-      const payload = {
-        device_id: 'vol-abc12345',
-        activity_type: 'crowd_report',
-        description: 'Crowd forming near Gate A',
-        severity: 'info',
+  describe('calculate', () => {
+    const payload = {
+      stadium_id: 'stadium-1',
+      gates: [{ gate_id: 'gate-a', sensor_count: 1200, capacity: 5000 }],
+    };
+
+    it('sends POST to /api/calculate with validated body', async () => {
+      const responseData = {
+        stadium_id: 'stadium-1',
+        overall_density_percent: 24,
+        total_people: 1200,
+        total_capacity: 5000,
+        gates: [],
+        timestamp: '2026-07-15T12:00:00Z',
       };
-      expect(() => entryRequestSchema.parse(payload)).not.toThrow();
+      mockFetch.mockResolvedValueOnce(jsonResponse(responseData));
+
+      const result = await apiClient.calculate(payload);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/calculate',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }),
+      );
+      expect(result.overall_density_percent).toBe(24);
     });
 
-    it('rejects invalid activity_type', () => {
-      const payload = {
-        device_id: 'vol-abc12345',
-        activity_type: 'invalid_type',
-        description: 'Test',
-        severity: 'info',
-      };
-      expect(() => entryRequestSchema.parse(payload)).toThrow();
+    it('rejects invalid payload before fetch (empty gates)', async () => {
+      await expect(
+        apiClient.calculate({ stadium_id: 's1', gates: [] }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('rejects invalid severity', () => {
-      const payload = {
-        device_id: 'vol-abc12345',
-        activity_type: 'crowd_report',
-        description: 'Test',
-        severity: 'emergency',
-      };
-      expect(() => entryRequestSchema.parse(payload)).toThrow();
+    it('rejects negative sensor_count', async () => {
+      await expect(
+        apiClient.calculate({
+          stadium_id: 's1',
+          gates: [{ gate_id: 'g1', sensor_count: -5, capacity: 100 }],
+        }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('accepts optional location field', () => {
-      const payload = {
-        device_id: 'vol-abc12345',
-        activity_type: 'shift_checkin',
-        description: 'Checked in at station',
-        severity: 'info',
-        location: 'Concourse B',
-      };
-      expect(() => entryRequestSchema.parse(payload)).not.toThrow();
-    });
-
-    it('rejects empty description', () => {
-      const payload = {
-        device_id: 'vol-abc12345',
-        activity_type: 'other',
-        description: '',
-        severity: 'info',
-      };
-      expect(() => entryRequestSchema.parse(payload)).toThrow();
-    });
-
-    it('rejects empty device_id', () => {
-      const payload = {
-        device_id: '',
-        activity_type: 'fan_assist',
-        description: 'Test',
-        severity: 'info',
-      };
-      expect(() => entryRequestSchema.parse(payload)).toThrow();
+    it('rejects capacity above max', async () => {
+      await expect(
+        apiClient.calculate({
+          stadium_id: 's1',
+          gates: [{ gate_id: 'g1', sensor_count: 10, capacity: 300000 }],
+        }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 
-  describe('insightsRequestSchema', () => {
-    it('validates correct payload', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'crowd_routing',
-        input_text: 'Gate A is overcrowded',
-        target_language: 'en',
-      };
-      expect(() => insightsRequestSchema.parse(payload)).not.toThrow();
+  describe('createEntry', () => {
+    const payload = {
+      device_id: 'dev-1',
+      activity_type: 'crowd_report' as const,
+      description: 'Test entry',
+      severity: 'info' as const,
+    };
+
+    it('sends POST to /api/entries', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({ entry_id: 'e1', ...payload, created_at: '', status: 'logged' }),
+      );
+      const result = await apiClient.createEntry(payload);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/entries',
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(result.entry_id).toBe('e1');
     });
 
-    it('rejects invalid context_type', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'unknown_context',
-        input_text: 'Test',
-        target_language: 'en',
-      };
-      expect(() => insightsRequestSchema.parse(payload)).toThrow();
+    it('rejects invalid activity_type', async () => {
+      await expect(
+        apiClient.createEntry({
+          ...payload,
+          activity_type: 'invalid' as never,
+        }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('accepts optional gate_data', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'fan_translation',
-        input_text: 'Welcome fans',
-        target_language: 'es',
-        gate_data: [{ gate_id: 'gate-a', sensor_count: 500, capacity: 3000 }],
-      };
-      expect(() => insightsRequestSchema.parse(payload)).not.toThrow();
+    it('rejects invalid severity', async () => {
+      await expect(
+        apiClient.createEntry({ ...payload, severity: 'extreme' as never }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('rejects empty input_text', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'crowd_routing',
-        input_text: '',
-        target_language: 'en',
-      };
-      expect(() => insightsRequestSchema.parse(payload)).toThrow();
+    it('accepts optional location', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({ entry_id: 'e2', ...payload, created_at: '', status: 'logged' }),
+      );
+      await apiClient.createEntry({ ...payload, location: 'Gate A' });
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.location).toBe('Gate A');
+    });
+  });
+
+  describe('getEntries', () => {
+    it('sends GET to /api/entries/{deviceId}', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({ device_id: 'dev-1', entries: [], total: 0 }),
+      );
+      await apiClient.getEntries('dev-1');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/entries/dev-1',
+        expect.objectContaining({ method: 'GET' }),
+      );
     });
 
-    it('rejects target_language shorter than 2 characters', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'facility_alert',
-        input_text: 'Issue at gate',
-        target_language: 'e',
-      };
-      expect(() => insightsRequestSchema.parse(payload)).toThrow();
+    it('URL-encodes special characters in deviceId', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({ device_id: 'a/b c', entries: [], total: 0 }),
+      );
+      await apiClient.getEntries('a/b c');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/entries/a%2Fb%20c',
+        expect.anything(),
+      );
+    });
+  });
+
+  describe('generateInsights', () => {
+    const payload = {
+      stadium_id: 's1',
+      context_type: 'crowd_routing' as const,
+      input_text: 'overcrowded gate',
+      target_language: 'en',
+    };
+
+    it('sends POST to /api/insights', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          stadium_id: 's1',
+          context_type: 'crowd_routing',
+          megaphone_script: 'Move along',
+          reasoning: 'reason',
+          target_language: 'en',
+          recommendations: [],
+          timestamp: '',
+        }),
+      );
+      const result = await apiClient.generateInsights(payload);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/insights',
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(result.megaphone_script).toBe('Move along');
     });
 
-    it('rejects target_language longer than 10 characters', () => {
-      const payload = {
-        stadium_id: 'stadium-1',
-        context_type: 'facility_alert',
-        input_text: 'Issue at gate',
-        target_language: 'english-spanish',
-      };
-      expect(() => insightsRequestSchema.parse(payload)).toThrow();
+    it('rejects invalid context_type', async () => {
+      await expect(
+        apiClient.generateInsights({
+          ...payload,
+          context_type: 'bad' as never,
+        }),
+      ).rejects.toThrow();
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('accepts optional gate_data', async () => {
+      mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true }));
+      await apiClient.generateInsights({
+        ...payload,
+        gate_data: [{ gate_id: 'g1', sensor_count: 10, capacity: 100 }],
+      });
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.gate_data).toHaveLength(1);
+    });
+  });
+
+  describe('health', () => {
+    it('sends GET to /health (outside /api base)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          status: 'healthy',
+          database: 'connected',
+          gemini_configured: true,
+          version: '1.0.0',
+        }),
+      );
+      const result = await apiClient.health();
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/../health',
+        expect.objectContaining({ method: 'GET' }),
+      );
+      expect(result.status).toBe('healthy');
+    });
+  });
+
+  describe('error handling', () => {
+    it('throws Error with detail from error response', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({ detail: 'Gate capacity exceeded' }, 400),
+      );
+      await expect(
+        apiClient.calculate({
+          stadium_id: 's1',
+          gates: [{ gate_id: 'g1', sensor_count: 10, capacity: 100 }],
+        }),
+      ).rejects.toThrow('Gate capacity exceeded');
+    });
+
+    it('falls back to HTTP status when body is not JSON', async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response('Server Error', { status: 500, statusText: 'Internal Server Error' }),
+      );
+      await expect(
+        apiClient.calculate({
+          stadium_id: 's1',
+          gates: [{ gate_id: 'g1', sensor_count: 10, capacity: 100 }],
+        }),
+      ).rejects.toThrow('HTTP 500');
+    });
+
+    it('falls back to HTTP status when error body lacks detail', async () => {
+      mockFetch.mockResolvedValueOnce(jsonResponse({}, 422));
+      await expect(
+        apiClient.calculate({
+          stadium_id: 's1',
+          gates: [{ gate_id: 'g1', sensor_count: 10, capacity: 100 }],
+        }),
+      ).rejects.toThrow('HTTP 422');
+    });
+
+    it('propagates network failures', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      await expect(apiClient.health()).rejects.toThrow('Failed to fetch');
     });
   });
 });
