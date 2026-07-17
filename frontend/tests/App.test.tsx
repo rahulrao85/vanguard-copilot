@@ -94,23 +94,23 @@ describe('App', () => {
     render(<App />);
     const calcTab = screen.getByRole('button', { name: /Understand: Calculate/i });
     expect(calcTab).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('Crowd Density Calculator')).toBeInTheDocument();
+    expect(screen.getByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
   });
 
   it('clicking tab buttons changes the visible panel', () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole('button', { name: /Track: Log Entry/i }));
-    expect(screen.getByText('Activity Log Entry')).toBeInTheDocument();
+    expect(screen.getByText('⚽ Activity Log Entry')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Reduce: Insights/i }));
-    expect(screen.getByText('AI Insights')).toBeInTheDocument();
+    expect(screen.getByText('⚽ AI Insights')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Jury Upload: Custom Logs/i }));
-    expect(screen.getByRole('heading', { name: 'Jury Upload' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Jury Upload/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Understand: Calculate/i }));
-    expect(screen.getByText('Crowd Density Calculator')).toBeInTheDocument();
+    expect(screen.getByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
   });
 
   it('<html> has lang="en"', () => {

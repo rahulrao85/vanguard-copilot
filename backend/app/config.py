@@ -33,7 +33,11 @@ class Settings(BaseSettings):
 
     max_payload_bytes: int = 65536  # 64 KB
 
-    allowed_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    allowed_origins: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://vanguard-copilot.run.place",
+    ]
 
 
 settings = Settings()

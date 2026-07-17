@@ -57,7 +57,7 @@ describe('InsightsPanel', () => {
     expect(screen.getByLabelText('Context Type')).toBeInTheDocument();
     expect(screen.getByLabelText('Target Language')).toBeInTheDocument();
     expect(screen.getByLabelText('Input Context / Query')).toBeInTheDocument();
-    expect(screen.getByLabelText('Stadium ID')).toBeInTheDocument();
+    expect(screen.getByLabelText('Stadium')).toBeInTheDocument();
   });
 
   it('form elements have <label> elements', () => {

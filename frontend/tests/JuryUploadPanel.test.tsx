@@ -26,7 +26,7 @@ describe('JuryUploadPanel', () => {
 
   it('renders "Jury Upload" heading', () => {
     render(<JuryUploadPanel />);
-    expect(screen.getByRole('heading', { name: 'Jury Upload' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Jury Upload/ })).toBeInTheDocument();
   });
 
   it('has file input for .json files', () => {

@@ -49,8 +49,8 @@ describe('CalculatePanel', () => {
 
   it('renders form with stadium_id input and gate data inputs', () => {
     render(<CalculatePanel />);
-    expect(screen.getByText('Crowd Density Calculator')).toBeInTheDocument();
-    expect(screen.getByLabelText('Stadium ID')).toBeInTheDocument();
+    expect(screen.getByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
+    expect(screen.getByLabelText('Stadium')).toBeInTheDocument();
     expect(screen.getByLabelText('Gate 1 identifier')).toBeInTheDocument();
     expect(screen.getByLabelText('Gate 1 sensor count')).toBeInTheDocument();
     expect(screen.getByLabelText('Gate 1 capacity')).toBeInTheDocument();
@@ -58,9 +58,9 @@ describe('CalculatePanel', () => {
 
   it('form inputs have associated <label> elements', () => {
     render(<CalculatePanel />);
-    const stadiumInput = screen.getByLabelText('Stadium ID');
+    const stadiumInput = screen.getByLabelText('Stadium');
     expect(stadiumInput).toBeInTheDocument();
-    expect(stadiumInput).toHaveAttribute('type', 'text');
+    expect(stadiumInput.tagName).toBe('SELECT');
     expect(document.querySelector('label[for]')).toBeInTheDocument();
   });
 
