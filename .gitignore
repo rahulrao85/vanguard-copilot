@@ -50,3 +50,5 @@ Thumbs.db
 !frontend/tsconfig.json
 !frontend/package.json
 !backend/pyproject.toml
+
+# mypy.mypy_cache/
