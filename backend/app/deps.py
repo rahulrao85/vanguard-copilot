@@ -1,9 +1,7 @@
-from app.repository.memory import InMemoryRepository
-from app.repository.firestore import FirestoreRepository
-from app.repository.sqlite import SqliteRepository
-from app.repository.base import AbstractRepository
-from app.services.gemini import GeminiService
 from app.config import settings
+from app.repository.base import AbstractRepository
+from app.repository.sqlite import SqliteRepository
+from app.services.gemini import GeminiService
 
 _repository_instance: AbstractRepository | None = None
 _gemini_service_instance: GeminiService | None = None
@@ -13,6 +11,7 @@ def _get_repository() -> AbstractRepository:
     global _repository_instance
     if _repository_instance is None:
         if settings.firestore_emulator_host:
+            from app.repository.firestore import FirestoreRepository
             _repository_instance = FirestoreRepository()
         else:
             _repository_instance = SqliteRepository(db_path=settings.sqlite_db_path)
