@@ -1,0 +1,15 @@
+services:
+  vanguard:
+    build: .
+    container_name: vanguard
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SQLITE_DB_PATH=/data/vanguard.db
+    volumes:
+      - vanguard-data:/data
+
+volumes:
+  vanguard-data:

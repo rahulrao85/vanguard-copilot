@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.gcov
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# Credentials
+*.json
+!frontend/tsconfig.json
+!frontend/package.json
+!backend/pyproject.toml
