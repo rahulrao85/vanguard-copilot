@@ -2,7 +2,6 @@
 Tests for application configuration and settings.
 """
 
-import pytest
 
 from app.config import Settings
 

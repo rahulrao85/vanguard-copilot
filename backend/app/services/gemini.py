@@ -4,14 +4,12 @@ fan query translations, and operational reasoning recommendations.
 """
 
 import json
-from typing import Optional
 
 from google import genai  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from app.config import settings
 from app.models.schemas import GateData
-
 
 SYSTEM_PROMPT = """You are Vanguard Co-Pilot, an AI assistant for FIFA World Cup 2026 stadium volunteers.
 Your role is to help volunteers manage crowds, translate fan queries into multiple languages, and
@@ -41,7 +39,7 @@ class GeminiService:
         context_type: str,
         input_text: str,
         target_language: str,
-        gate_data: Optional[list[GateData]] = None,
+        gate_data: list[GateData] | None = None,
     ) -> dict[str, object]:
         """Generate AI-powered insights using Gemini for the given stadium context.
 
@@ -107,10 +105,10 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
         context_type: str,
         target_language: str,
         input_text: str,
-        gate_data: Optional[list[GateData]] = None,
+        gate_data: list[GateData] | None = None,
     ) -> dict[str, object]:
         """Provide a mock response when Gemini API key is not configured.
-        
+
         This enables local development and testing without real API credentials.
         """
         if context_type == "crowd_routing":

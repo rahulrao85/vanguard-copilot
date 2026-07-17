@@ -2,9 +2,8 @@
 Tests for dependency injection providers.
 """
 
-import pytest
 
-from app.deps import get_repository, get_gemini_service
+from app.deps import get_gemini_service, get_repository
 from app.repository.base import AbstractRepository
 from app.repository.memory import InMemoryRepository
 from app.services.gemini import GeminiService

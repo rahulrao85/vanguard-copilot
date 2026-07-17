@@ -8,11 +8,9 @@ from pydantic import ValidationError
 from app.models.schemas import (
     CalculateRequest,
     EntryRequest,
-    EntryResponse,
     ErrorResponse,
     GateData,
     InsightsRequest,
-    InsightsResponse,
 )
 
 

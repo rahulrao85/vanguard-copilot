@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 from app.repository.memory import InMemoryRepository
-from app.deps import get_repository, _repository_instance, get_gemini_service, _gemini_service_instance
 
 
 @pytest.fixture

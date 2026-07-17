@@ -2,7 +2,6 @@
 Unit tests for GeminiService and related helpers.
 """
 
-import pytest
 
 from app.models.schemas import GateData
 from app.routes.calculate import _compute_density, _determine_status

@@ -6,10 +6,10 @@ and actionable reasoning recommendations.
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.models.schemas import InsightsRequest, InsightsResponse, ErrorResponse
-from app.services.gemini import GeminiService
 from app.deps import get_gemini_service
+from app.models.schemas import ErrorResponse, InsightsRequest, InsightsResponse
 from app.rate_limit import limiter
+from app.services.gemini import GeminiService
 
 router = APIRouter(tags=["insights"])
 
@@ -17,7 +17,11 @@ router = APIRouter(tags=["insights"])
 @router.post(
     "/api/insights",
     response_model=InsightsResponse,
-    responses={200: {"description": "Success"}, 400: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    responses={
+        200: {"description": "Success"},
+        400: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+    },
     summary="Generate AI-powered insights and recommendations",
 )
 @limiter.limit("30/minute")
@@ -56,4 +60,4 @@ async def generate_insights(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Insight generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Insight generation failed: {e!s}")

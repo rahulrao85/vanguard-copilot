@@ -4,10 +4,9 @@ Health check route for infrastructure monitoring and load balancer probes.
 
 from fastapi import APIRouter, Depends
 
+from app.deps import get_gemini_service, get_repository
 from app.repository.base import AbstractRepository
-from app.deps import get_repository
 from app.services.gemini import GeminiService
-from app.deps import get_gemini_service
 
 router = APIRouter(tags=["health"])
 

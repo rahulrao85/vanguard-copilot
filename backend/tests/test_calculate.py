@@ -2,7 +2,6 @@
 Tests for the /api/calculate endpoint covering normal and error cases.
 """
 
-import pytest
 
 
 class TestCalculateSuccess:

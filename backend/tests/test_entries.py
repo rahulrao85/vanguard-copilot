@@ -2,7 +2,6 @@
 Tests for the /api/entries endpoints covering normal and error cases.
 """
 
-import pytest
 
 
 class TestCreateEntry:

@@ -5,7 +5,7 @@ and gate status from incoming sensor counts or mock gate data.
 
 from fastapi import APIRouter, Request
 
-from app.models.schemas import CalculateRequest, CalculateResponse, GateStatus, ErrorResponse
+from app.models.schemas import CalculateRequest, CalculateResponse, ErrorResponse, GateStatus
 from app.rate_limit import limiter
 
 router = APIRouter(tags=["calculate"])
@@ -36,7 +36,10 @@ def _get_recommendation(gate_id: str, status: str) -> str:
         "clear": f"Gate {gate_id} is flowing smoothly. Maintain current staffing levels.",
         "moderate": f"Gate {gate_id} traffic is moderate. Monitor closely for buildup.",
         "busy": f"Gate {gate_id} is getting crowded. Consider opening additional lanes.",
-        "critical": f"Gate {gate_id} is critically congested! Deploy crowd control and redirect to alternate gates immediately.",
+        "critical": (
+            f"Gate {gate_id} is critically congested! "
+            "Deploy crowd control and redirect to alternate gates immediately."
+        ),
     }
     return recommendations.get(status, "Status unknown. Monitor the situation.")
 
@@ -44,7 +47,11 @@ def _get_recommendation(gate_id: str, status: str) -> str:
 @router.post(
     "/api/calculate",
     response_model=CalculateResponse,
-    responses={200: {"description": "Success"}, 400: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    responses={
+        200: {"description": "Success"},
+        400: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+    },
     summary="Calculate crowd density and gate status",
 )
 @limiter.limit("30/minute")

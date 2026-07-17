@@ -5,7 +5,7 @@ Defines the contract for CRUD operations on volunteer activity entries.
 
 from abc import ABC, abstractmethod
 
-from app.models.schemas import EntryRequest, EntryResponse, EntriesListResponse
+from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse
 
 
 class AbstractRepository(ABC):

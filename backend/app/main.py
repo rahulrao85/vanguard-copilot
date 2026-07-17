@@ -38,7 +38,11 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    csp = (
+        "default-src 'self'; script-src 'self';"
+        " style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    )
+    response.headers["Content-Security-Policy"] = csp
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
@@ -50,7 +54,10 @@ async def body_size_limit_middleware(request: Request, call_next):
     if content_length and int(content_length) > MAX_PAYLOAD_BYTES:
         return JSONResponse(
             status_code=413,
-            content={"detail": f"Request body exceeds {MAX_PAYLOAD_BYTES // 1024}KB limit", "error_code": "PAYLOAD_TOO_LARGE"},
+            content={
+                "detail": f"Request body exceeds {MAX_PAYLOAD_BYTES // 1024}KB limit",
+                "error_code": "PAYLOAD_TOO_LARGE",
+            },
         )
     return await call_next(request)
 

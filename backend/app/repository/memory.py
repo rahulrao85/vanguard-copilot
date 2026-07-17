@@ -6,9 +6,9 @@ external credentials or network access.
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from app.models.schemas import EntryRequest, EntryResponse, EntriesListResponse
+from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse
 from app.repository.base import AbstractRepository
 
 
@@ -22,7 +22,7 @@ class InMemoryRepository(AbstractRepository):
     async def create_entry(self, entry: EntryRequest) -> EntryResponse:
         """Store a new activity entry in memory and return the response."""
         entry_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         response = EntryResponse(
             entry_id=entry_id,

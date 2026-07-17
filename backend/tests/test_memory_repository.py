@@ -2,7 +2,6 @@
 Unit tests for InMemoryRepository (no HTTP client needed).
 """
 
-import pytest
 
 from app.models.schemas import EntryRequest
 from app.repository.memory import InMemoryRepository

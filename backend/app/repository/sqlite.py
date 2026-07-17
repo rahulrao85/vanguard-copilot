@@ -1,10 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import aiosqlite
 
-from app.models.schemas import EntryRequest, EntryResponse, EntriesListResponse
+from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse
 from app.repository.base import AbstractRepository
 
 CREATE_ENTRIES_TABLE = """
@@ -25,7 +25,8 @@ CREATE INDEX IF NOT EXISTS idx_entries_device_id ON entries(device_id)
 """
 
 INSERT_ENTRY = """
-INSERT INTO entries (entry_id, device_id, activity_type, description, location, severity, created_at, status)
+INSERT INTO entries
+    (entry_id, device_id, activity_type, description, location, severity, created_at, status)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 """
 
@@ -57,7 +58,7 @@ class SqliteRepository(AbstractRepository):
 
     async def create_entry(self, entry: EntryRequest) -> EntryResponse:
         entry_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         conn = await self._get_connection()
         try:
             await conn.execute(

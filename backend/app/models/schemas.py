@@ -3,8 +3,7 @@ Pydantic models for the Vanguard Co-Pilot API.
 Defines request/response schemas with strict validation.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -49,7 +48,7 @@ class CalculateResponse(BaseModel):
     total_people: int
     total_capacity: int
     gates: list[GateStatus]
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class EntryRequest(BaseModel):
@@ -58,7 +57,7 @@ class EntryRequest(BaseModel):
     device_id: str = Field(..., min_length=1, max_length=128, description="Anonymous device identifier")
     activity_type: str = Field(..., min_length=1, max_length=64, description="Type of activity logged")
     description: str = Field(..., min_length=1, max_length=8192, description="Activity or incident description")
-    location: Optional[str] = Field(default=None, max_length=256, description="Location within the stadium")
+    location: str | None = Field(default=None, max_length=256, description="Location within the stadium")
     severity: str = Field(default="info", pattern=r"^(info|warning|critical)$", description="Severity level")
 
     @field_validator("activity_type")
@@ -78,7 +77,7 @@ class EntryResponse(BaseModel):
     device_id: str
     activity_type: str
     description: str
-    location: Optional[str]
+    location: str | None
     severity: str
     created_at: str
     status: str = "logged"
@@ -99,7 +98,7 @@ class InsightsRequest(BaseModel):
     context_type: str = Field(..., description="Insight type: crowd_routing, fan_translation, facility_alert")
     input_text: str = Field(..., min_length=1, max_length=8192, description="Raw context or fan query")
     target_language: str = Field(default="en", max_length=10, description="Target language code for translations")
-    gate_data: Optional[list[GateData]] = Field(default=None, description="Optional gate data for routing insights")
+    gate_data: list[GateData] | None = Field(default=None, description="Optional gate data for routing insights")
 
     @field_validator("context_type")
     @classmethod
@@ -128,7 +127,7 @@ class InsightsResponse(BaseModel):
     reasoning: str = Field(..., description="AI reasoning behind the recommendation")
     target_language: str
     recommendations: list[str] = Field(default_factory=list, description="Actionable recommendations")
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class ErrorResponse(BaseModel):
@@ -136,4 +135,4 @@ class ErrorResponse(BaseModel):
 
     detail: str
     error_code: str
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())

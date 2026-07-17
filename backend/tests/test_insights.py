@@ -2,7 +2,6 @@
 Tests for the POST /api/insights endpoint.
 """
 
-import pytest
 
 
 class TestInsightsSuccess:

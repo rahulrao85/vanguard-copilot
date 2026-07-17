@@ -5,10 +5,10 @@ logs and incident reports keyed by anonymous device_id.
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.models.schemas import EntryRequest, EntryResponse, EntriesListResponse, ErrorResponse
-from app.repository.base import AbstractRepository
 from app.deps import get_repository
+from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse, ErrorResponse
 from app.rate_limit import limiter
+from app.repository.base import AbstractRepository
 
 router = APIRouter(tags=["entries"])
 
@@ -39,7 +39,7 @@ async def create_entry(
         entry = await repo.create_entry(payload)
         return entry
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save entry: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to save entry: {e!s}")
 
 
 @router.get(
@@ -66,4 +66,4 @@ async def get_entries(
         entries = await repo.get_entries_by_device(device_id)
         return entries
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve entries: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve entries: {e!s}")

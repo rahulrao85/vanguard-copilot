@@ -2,7 +2,6 @@
 Tests for rate limiter registration and configuration.
 """
 
-import pytest
 from slowapi import Limiter
 
 from app.rate_limit import limiter

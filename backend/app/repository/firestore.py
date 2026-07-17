@@ -5,12 +5,12 @@ backed by Firestore (NoSQL document database).
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from google.cloud import firestore  # type: ignore[import-untyped]
 
 from app.config import settings
-from app.models.schemas import EntryRequest, EntryResponse, EntriesListResponse
+from app.models.schemas import EntriesListResponse, EntryRequest, EntryResponse
 from app.repository.base import AbstractRepository
 
 
@@ -24,7 +24,7 @@ class FirestoreRepository(AbstractRepository):
     async def create_entry(self, entry: EntryRequest) -> EntryResponse:
         """Persist a new activity entry to Firestore."""
         entry_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         doc_data = {
             "entry_id": entry_id,
