@@ -1,3 +1,5 @@
+import logging
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -13,13 +15,18 @@ from app.config import settings
 from app.rate_limit import limiter
 from app.routes import calculate, entries, health, insights
 
+logger = logging.getLogger("vanguard")
+
 MAX_PAYLOAD_BYTES = settings.max_payload_bytes
 STATIC_DIR = Path("/app/static")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
+    logger.info("Vanguard Co-Pilot starting — version 1.0.0")
     yield
+    logger.info("Vanguard Co-Pilot shutting down")
 
 
 app = FastAPI(
@@ -31,6 +38,24 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
+
+@app.middleware("http")
+async def log_middleware(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    start = time.time()
+    response = await call_next(request)
+    elapsed = time.time() - start
+    logger.info(
+        "%s %s → %d (%.2fms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed * 1000,
+    )
+    return response
 
 
 @app.middleware("http")

@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { memo, useEffect, useId, useState } from 'react';
 import { useInsightsStore } from '../store/useInsightsStore';
 import { useStadiumStore } from '../store/useStadiumStore';
 import { STADIUMS, LANGUAGES, GATES_BY_STADIUM } from '../theme';
@@ -190,6 +190,90 @@ const S = {
   } as React.CSSProperties,
 };
 
+interface InsightGateRowProps {
+  gate: GateData;
+  index: number;
+  stadiumGates: Array<{ id: string; label: string }>;
+  totalRows: number;
+  onUpdate: (index: number, field: keyof GateData, value: string | number) => void;
+  onRemove: (index: number) => void;
+}
+
+const InsightGateRowComponent = memo(function InsightGateRowComponent({
+  gate, index, stadiumGates, totalRows, onUpdate, onRemove,
+}: InsightGateRowProps) {
+  return (
+    <div style={{ ...S.gateRow, marginBottom: '0.5rem' }}>
+      <div style={S.gateField}>
+        <label htmlFor={`insight-gate-${index}-id`} style={{ ...S.label, fontSize: '0.7rem' }}>
+          Gate ID
+        </label>
+        <select
+          id={`insight-gate-${index}-id`}
+          style={S.select}
+          value={gate.gate_id}
+          onChange={(e) => onUpdate(index, 'gate_id', e.target.value)}
+          aria-label={`Insight gate ${index + 1} identifier`}
+        >
+          <option value="" disabled>Select a gate...</option>
+          {stadiumGates.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={S.gateField}>
+        <label htmlFor={`insight-gate-${index}-count`} style={{ ...S.label, fontSize: '0.7rem' }}>
+          Sensor Count
+        </label>
+        <input
+          id={`insight-gate-${index}-count`}
+          style={S.input}
+          type="number"
+          value={gate.sensor_count}
+          onChange={(e) => onUpdate(index, 'sensor_count', Number(e.target.value))}
+          placeholder="0"
+          min={0}
+          max={100000}
+          aria-label={`Insight gate ${index + 1} sensor count`}
+        />
+      </div>
+      <div style={S.gateField}>
+        <label htmlFor={`insight-gate-${index}-cap`} style={{ ...S.label, fontSize: '0.7rem' }}>
+          Capacity
+        </label>
+        <input
+          id={`insight-gate-${index}-cap`}
+          style={S.input}
+          type="number"
+          value={gate.capacity}
+          onChange={(e) => onUpdate(index, 'capacity', Number(e.target.value))}
+          placeholder="1000"
+          min={1}
+          max={200000}
+          aria-label={`Insight gate ${index + 1} capacity`}
+        />
+      </div>
+      {totalRows > 1 && (
+        <button
+          type="button"
+          style={{
+            ...S.btnToggle,
+            color: 'var(--color-accent-danger)',
+            borderColor: 'rgba(239, 68, 68, 0.3)',
+            marginBottom: '0.15rem',
+          }}
+          onClick={() => onRemove(index)}
+          aria-label={`Remove insight gate ${gate.gate_id}`}
+        >
+          Remove
+        </button>
+      )}
+    </div>
+  );
+});
+
 export default function InsightsPanel() {
   const stadiumIdId = useId();
   const contextId = useId();
@@ -362,89 +446,15 @@ export default function InsightsPanel() {
         {showGateData && (
           <div id="gate-data-section">
             {gateRows.map((gate, idx) => (
-              <div key={idx} style={{ ...S.gateRow, marginBottom: '0.5rem' }}>
-                <div style={S.gateField}>
-                  <label
-                    htmlFor={`insight-gate-${idx}-id`}
-                    style={{ ...S.label, fontSize: '0.7rem' }}
-                  >
-                    Gate ID
-                  </label>
-                  <select
-                    id={`insight-gate-${idx}-id`}
-                    style={S.select}
-                    value={gate.gate_id}
-                    onChange={(e) =>
-                      updateGateRow(idx, 'gate_id', e.target.value)
-                    }
-                    aria-label={`Insight gate ${idx + 1} identifier`}
-                  >
-                    <option value="" disabled>Select a gate...</option>
-                    {stadiumGates.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={S.gateField}>
-                  <label
-                    htmlFor={`insight-gate-${idx}-count`}
-                    style={{ ...S.label, fontSize: '0.7rem' }}
-                  >
-                    Sensor Count
-                  </label>
-                  <input
-                    id={`insight-gate-${idx}-count`}
-                    style={S.input}
-                    type="number"
-                    value={gate.sensor_count}
-                    onChange={(e) =>
-                      updateGateRow(idx, 'sensor_count', Number(e.target.value))
-                    }
-                    placeholder="0"
-                    min={0}
-                    max={100000}
-                    aria-label={`Insight gate ${idx + 1} sensor count`}
-                  />
-                </div>
-                <div style={S.gateField}>
-                  <label
-                    htmlFor={`insight-gate-${idx}-cap`}
-                    style={{ ...S.label, fontSize: '0.7rem' }}
-                  >
-                    Capacity
-                  </label>
-                  <input
-                    id={`insight-gate-${idx}-cap`}
-                    style={S.input}
-                    type="number"
-                    value={gate.capacity}
-                    onChange={(e) =>
-                      updateGateRow(idx, 'capacity', Number(e.target.value))
-                    }
-                    placeholder="1000"
-                    min={1}
-                    max={200000}
-                    aria-label={`Insight gate ${idx + 1} capacity`}
-                  />
-                </div>
-                {gateRows.length > 1 && (
-                  <button
-                    type="button"
-                    style={{
-                      ...S.btnToggle,
-                      color: 'var(--color-accent-danger)',
-                      borderColor: 'rgba(239, 68, 68, 0.3)',
-                      marginBottom: '0.15rem',
-                    }}
-                    onClick={() => removeGateRow(idx)}
-                    aria-label={`Remove insight gate ${gate.gate_id}`}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+              <InsightGateRowComponent
+                key={idx}
+                gate={gate}
+                index={idx}
+                stadiumGates={stadiumGates}
+                totalRows={gateRows.length}
+                onUpdate={updateGateRow}
+                onRemove={removeGateRow}
+              />
             ))}
             <button type="button" style={S.btnToggle} onClick={addGateRow}>
               + Add Gate

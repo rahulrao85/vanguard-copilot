@@ -217,7 +217,7 @@ describe('ApiClient', () => {
       );
       const result = await apiClient.health();
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/../health',
+        '/api/health',
         expect.objectContaining({ method: 'GET' }),
       );
       expect(result.status).toBe('healthy');

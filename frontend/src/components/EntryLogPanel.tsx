@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useEntriesStore } from '../store/useEntriesStore';
 import { getDeviceId } from '../utils/device';
 import type { EntryRequest, EntryResponse } from '../types';
@@ -189,10 +189,12 @@ export default function EntryLogPanel() {
   const { entries, isLoading, error, createEntry, fetchEntries } =
     useEntriesStore();
 
+  const fetchedRef = useRef(false);
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchEntries().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchEntries]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

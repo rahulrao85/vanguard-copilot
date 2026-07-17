@@ -40,9 +40,16 @@ const insightsRequestSchema = z.object({
 
 export class ApiClient {
   private baseUrl: string;
+  private abortController: AbortController | null = null;
 
   constructor(baseUrl: string = API_BASE) {
     this.baseUrl = baseUrl;
+  }
+
+  cancelPending(): void {
+    if (this.abortController) {
+      this.abortController.abort();
+    }
   }
 
   private async request<T>(
@@ -50,6 +57,10 @@ export class ApiClient {
     path: string,
     body?: unknown,
   ): Promise<T> {
+    this.cancelPending();
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -59,21 +70,27 @@ export class ApiClient {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal,
     };
 
     const response = await fetch(url, options);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.detail || `HTTP ${response.status}: ${response.statusText}`,
-      );
+      let detail = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData && typeof errorData === 'object' && 'detail' in errorData) {
+          detail = errorData.detail as string;
+        }
+      } catch {
+        // fallback to default HTTP status text
+      }
+      throw new Error(detail);
     }
 
     return response.json() as Promise<T>;
   }
 
-  /** Phase 1: Calculate crowd density from gate sensor data. */
   async calculate(
     data: z.infer<typeof calculateRequestSchema>,
   ): Promise<CalculateResponse> {
@@ -81,7 +98,6 @@ export class ApiClient {
     return this.request<CalculateResponse>('POST', '/calculate', validated);
   }
 
-  /** Phase 2: Save a volunteer activity entry. */
   async createEntry(
     data: z.infer<typeof entryRequestSchema>,
   ): Promise<EntryResponse> {
@@ -89,7 +105,6 @@ export class ApiClient {
     return this.request<EntryResponse>('POST', '/entries', validated);
   }
 
-  /** Phase 2: Retrieve entries for a device. */
   async getEntries(deviceId: string): Promise<EntriesListResponse> {
     return this.request<EntriesListResponse>(
       'GET',
@@ -97,7 +112,6 @@ export class ApiClient {
     );
   }
 
-  /** Phase 3: Generate AI insights via Gemini. */
   async generateInsights(
     data: z.infer<typeof insightsRequestSchema>,
   ): Promise<InsightsResponse> {
@@ -105,9 +119,8 @@ export class ApiClient {
     return this.request<InsightsResponse>('POST', '/insights', validated);
   }
 
-  /** Check backend health. */
   async health(): Promise<HealthResponse> {
-    return this.request<HealthResponse>('GET', '/../health');
+    return this.request<HealthResponse>('GET', '/health');
   }
 }
 

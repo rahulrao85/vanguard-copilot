@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { memo, useEffect, useId, useState } from 'react';
 import { useCrowdStore } from '../store/useCrowdStore';
 import { useStadiumStore } from '../store/useStadiumStore';
 import { STADIUMS, GATES_BY_STADIUM } from '../theme';
@@ -294,6 +294,94 @@ function densityColor(pct: number): string {
   return 'var(--color-accent-success)';
 }
 
+interface GateRowProps {
+  gate: GateData;
+  index: number;
+  stadiumGates: Array<{ id: string; label: string }>;
+  totalRows: number;
+  onUpdate: (index: number, field: keyof GateData, value: string | number) => void;
+  onRemove: (index: number) => void;
+}
+
+const GateRowComponent = memo(function GateRowComponent({
+  gate, index, stadiumGates, totalRows, onUpdate, onRemove,
+}: GateRowProps) {
+  const gateLabelId = `gate-${index}`;
+  return (
+    <div style={S.gateRow}>
+      <div style={S.gateField}>
+        <label htmlFor={`${gateLabelId}-id`} style={{ ...S.label, fontSize: '0.72rem' }}>
+          Gate ID
+        </label>
+        <select
+          id={`${gateLabelId}-id`}
+          style={S.select}
+          value={gate.gate_id}
+          onChange={(e) => onUpdate(index, 'gate_id', e.target.value)}
+          required
+          aria-label={`Gate ${index + 1} identifier`}
+        >
+          <option value="" disabled>Select a gate...</option>
+          {stadiumGates.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={S.gateField}>
+        <label htmlFor={`${gateLabelId}-count`} style={{ ...S.label, fontSize: '0.72rem' }}>
+          Sensor Count
+        </label>
+        <input
+          id={`${gateLabelId}-count`}
+          style={S.input}
+          type="number"
+          value={gate.sensor_count}
+          onChange={(e) => onUpdate(index, 'sensor_count', Number(e.target.value))}
+          placeholder="0"
+          required
+          min={0}
+          max={100000}
+          aria-label={`Gate ${index + 1} sensor count`}
+        />
+      </div>
+      <div style={S.gateField}>
+        <label htmlFor={`${gateLabelId}-cap`} style={{ ...S.label, fontSize: '0.72rem' }}>
+          Capacity
+        </label>
+        <input
+          id={`${gateLabelId}-cap`}
+          style={S.input}
+          type="number"
+          value={gate.capacity}
+          onChange={(e) => onUpdate(index, 'capacity', Number(e.target.value))}
+          placeholder="1000"
+          required
+          min={1}
+          max={200000}
+          aria-label={`Gate ${index + 1} capacity`}
+        />
+      </div>
+      {totalRows > 1 && (
+        <button
+          type="button"
+          style={{
+            ...S.btnSecondary,
+            color: 'var(--color-accent-danger)',
+            borderColor: 'rgba(239, 68, 68, 0.3)',
+            marginBottom: '0.15rem',
+          }}
+          onClick={() => onRemove(index)}
+          aria-label={`Remove gate ${gate.gate_id}`}
+        >
+          Remove
+        </button>
+      )}
+    </div>
+  );
+});
+
 export default function CalculatePanel() {
   const stadiumId = useId();
   const { selectedStadium, setStadium } = useStadiumStore();
@@ -410,86 +498,17 @@ export default function CalculatePanel() {
 
         <div style={S.field}>
           <span style={S.label}>Gate Data</span>
-          {gateRows.map((gate, idx) => {
-            const gateLabelId = `gate-${idx}`;
-            return (
-              <div key={idx} style={S.gateRow}>
-                <div style={S.gateField}>
-                  <label htmlFor={`${gateLabelId}-id`} style={{ ...S.label, fontSize: '0.72rem' }}>
-                    Gate ID
-                  </label>
-                  <select
-                    id={`${gateLabelId}-id`}
-                    style={S.select}
-                    value={gate.gate_id}
-                    onChange={(e) => updateGate(idx, 'gate_id', e.target.value)}
-                    required
-                    aria-label={`Gate ${idx + 1} identifier`}
-                  >
-                    <option value="" disabled>Select a gate...</option>
-                    {stadiumGates.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={S.gateField}>
-                  <label htmlFor={`${gateLabelId}-count`} style={{ ...S.label, fontSize: '0.72rem' }}>
-                    Sensor Count
-                  </label>
-                  <input
-                    id={`${gateLabelId}-count`}
-                    style={S.input}
-                    type="number"
-                    value={gate.sensor_count}
-                    onChange={(e) =>
-                      updateGate(idx, 'sensor_count', Number(e.target.value))
-                    }
-                    placeholder="0"
-                    required
-                    min={0}
-                    max={100000}
-                    aria-label={`Gate ${idx + 1} sensor count`}
-                  />
-                </div>
-                <div style={S.gateField}>
-                  <label htmlFor={`${gateLabelId}-cap`} style={{ ...S.label, fontSize: '0.72rem' }}>
-                    Capacity
-                  </label>
-                  <input
-                    id={`${gateLabelId}-cap`}
-                    style={S.input}
-                    type="number"
-                    value={gate.capacity}
-                    onChange={(e) =>
-                      updateGate(idx, 'capacity', Number(e.target.value))
-                    }
-                    placeholder="1000"
-                    required
-                    min={1}
-                    max={200000}
-                    aria-label={`Gate ${idx + 1} capacity`}
-                  />
-                </div>
-                {gateRows.length > 1 && (
-                  <button
-                    type="button"
-                    style={{
-                      ...S.btnSecondary,
-                      color: 'var(--color-accent-danger)',
-                      borderColor: 'rgba(239, 68, 68, 0.3)',
-                      marginBottom: '0.15rem',
-                    }}
-                    onClick={() => removeGate(idx)}
-                    aria-label={`Remove gate ${gate.gate_id}`}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          {gateRows.map((gate, idx) => (
+            <GateRowComponent
+              key={idx}
+              gate={gate}
+              index={idx}
+              stadiumGates={stadiumGates}
+              totalRows={gateRows.length}
+              onUpdate={updateGate}
+              onRemove={removeGate}
+            />
+          ))}
           <div style={S.btnRow}>
             <button
               type="button"

@@ -12,6 +12,7 @@ from google.genai import types
 
 from app.config import settings
 from app.models.schemas import GateData
+from app.services.cache import cached
 
 SYSTEM_PROMPT = """You are Vanguard Co-Pilot, an AI assistant for FIFA World Cup 2026 stadium volunteers.
 Your role is to help volunteers manage crowds, translate fan queries into multiple languages, and
@@ -35,6 +36,7 @@ class GeminiService:
         self._client = genai.Client(api_key=settings.gemini_api_key) if settings.gemini_api_key else None
         self._configured = settings.gemini_api_key != ""
 
+    @cached(ttl=300)
     async def generate_insights(
         self,
         stadium_id: str,

@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import CalculatePanel from './components/CalculatePanel';
-import EntryLogPanel from './components/EntryLogPanel';
-import InsightsPanel from './components/InsightsPanel';
-import JuryUploadPanel from './components/JuryUploadPanel';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
 import NationsBanner from './components/NationsBanner';
+import OnboardingBanner from './components/OnboardingBanner';
 import PlayerCard from './components/PlayerCard';
 import { apiClient } from './api/client';
 import { STADIUMS } from './theme';
 import { useStadiumStore } from './store/useStadiumStore';
 import type { HealthResponse } from './types';
+
+const CalculatePanel = lazy(() => import('./components/CalculatePanel'));
+const EntryLogPanel = lazy(() => import('./components/EntryLogPanel'));
+const InsightsPanel = lazy(() => import('./components/InsightsPanel'));
+const JuryUploadPanel = lazy(() => import('./components/JuryUploadPanel'));
 
 type TabKey = 'calculate' | 'entry' | 'insights' | 'jury';
 
@@ -261,20 +265,15 @@ export default function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }
 
-  function renderPanel(): React.ReactNode {
+  const panelComponent = (() => {
     switch (activeTab) {
-      case 'calculate':
-        return <CalculatePanel />;
-      case 'entry':
-        return <EntryLogPanel />;
-      case 'insights':
-        return <InsightsPanel />;
-      case 'jury':
-        return <JuryUploadPanel />;
-      default:
-        return null;
+      case 'calculate': return <CalculatePanel />;
+      case 'entry': return <EntryLogPanel />;
+      case 'insights': return <InsightsPanel />;
+      case 'jury': return <JuryUploadPanel />;
+      default: return null;
     }
-  }
+  })();
 
   return (
     <div style={S.app}>
@@ -383,10 +382,17 @@ export default function App() {
 
       <NationsBanner />
 
-      <main id="main-content" style={S.main} role="main" aria-label="Active panel">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
-          {renderPanel()}
-          <PlayerCard />
+      <main id="main-content" style={{ ...S.main, paddingTop: '0.75rem' }} role="main" aria-label="Active panel">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+          <OnboardingBanner />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingSpinner label="Loading panel..." size="lg" />}>
+                {panelComponent}
+              </Suspense>
+            </ErrorBoundary>
+            <PlayerCard />
+          </div>
         </div>
       </main>
     </div>

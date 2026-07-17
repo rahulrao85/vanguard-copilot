@@ -90,27 +90,27 @@ describe('App', () => {
     expect(document.getElementById('main-content')!.tagName).toBe('MAIN');
   });
 
-  it('default active tab is "calculate"', () => {
+  it('default active tab is "calculate"', async () => {
     render(<App />);
     const calcTab = screen.getByRole('button', { name: /Understand: Calculate/i });
     expect(calcTab).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
+    expect(await screen.findByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
   });
 
-  it('clicking tab buttons changes the visible panel', () => {
+  it('clicking tab buttons changes the visible panel', async () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole('button', { name: /Track: Log Entry/i }));
-    expect(screen.getByText('⚽ Activity Log Entry')).toBeInTheDocument();
+    expect(await screen.findByText('⚽ Activity Log Entry')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Reduce: Insights/i }));
-    expect(screen.getByText('⚽ AI Insights')).toBeInTheDocument();
+    expect(await screen.findByText('⚽ AI Insights')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Jury Upload: Custom Logs/i }));
-    expect(screen.getByRole('heading', { name: /Jury Upload/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Jury Upload/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Understand: Calculate/i }));
-    expect(screen.getByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
+    expect(await screen.findByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
   });
 
   it('<html> has lang="en"', () => {
