@@ -11,7 +11,7 @@ interface Props {
   onDemoStateChange: (s: TelemetryState | null) => void;
 }
 
-export default function StaffDashboard({ telemetry, isConnected, demoState, onDemoStateChange }: Props) {
+export default function StaffDashboard({ telemetry, demoState, onDemoStateChange }: Props) {
   const { t } = useTranslation();
   const { selectedStadium } = useStadiumStore();
   const [dispatchMsg, setDispatchMsg] = useState('');

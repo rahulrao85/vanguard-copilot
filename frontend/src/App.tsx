@@ -10,7 +10,8 @@ import DemoControls from './components/DemoControls';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import NationsBanner from './components/NationsBanner';
-import type { HealthResponse, TelemetryState } from './types';
+import type { HealthResponse } from './types';
+import type { TelemetryState } from './hooks/useTelemetry';
 
 const FanDashboard = lazy(() => import('./components/FanDashboard'));
 const OrganizerDashboard = lazy(() => import('./components/OrganizerDashboard'));
