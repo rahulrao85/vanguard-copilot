@@ -1,4 +1,4 @@
-﻿*,
+*,
 *::before,
 *::after {
   margin: 0;
@@ -215,3 +215,18 @@ select {
     font-size: 16px;
   }
 }
+
+/* ─── RTL (Arabic) Support ──────────────────────────── */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] nav,
+[dir="rtl"] .nav-items {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] header > div {
+  flex-direction: row-reverse;
+}
+

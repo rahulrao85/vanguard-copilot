@@ -1,13 +1,19 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import NationsBanner from './components/NationsBanner';
 import OnboardingBanner from './components/OnboardingBanner';
 import PlayerCard from './components/PlayerCard';
+import AIChat from './components/AIChat';
+import CrowdHeatmap from './components/CrowdHeatmap';
+import DemoControls from './components/DemoControls';
 import { apiClient } from './api/client';
 import { STADIUMS } from './theme';
 import { useStadiumStore } from './store/useStadiumStore';
+import { useTelemetry } from './hooks/useTelemetry';
 import type { HealthResponse } from './types';
+import type { TelemetryState } from './hooks/useTelemetry';
 
 const CalculatePanel = lazy(() => import('./components/CalculatePanel'));
 const EntryLogPanel = lazy(() => import('./components/EntryLogPanel'));
@@ -229,11 +235,23 @@ const S = {
   } as React.CSSProperties,
 };
 
+const LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'es', label: 'ES' },
+  { code: 'fr', label: 'FR' },
+  { code: 'ar', label: 'AR' },
+];
+
 export default function App() {
+  const { i18n } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(getInitialTheme);
   const [activeTab, setActiveTab] = useState<TabKey>('calculate');
   const [healthStatus, setHealthStatus] = useState<string>('loading');
+  const [demoState, setDemoState] = useState<TelemetryState | null>(null);
   const { selectedStadium, setStadium } = useStadiumStore();
+  const { telemetry, isConnected } = useTelemetry(!demoState);
+  const activeTelemetry = demoState ?? telemetry;
+  const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
 
   useEffect(() => {
     applyTheme(theme);
@@ -276,7 +294,7 @@ export default function App() {
   })();
 
   return (
-    <div style={S.app}>
+    <div style={S.app} dir={dir}>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
@@ -308,6 +326,22 @@ export default function App() {
         </div>
 
         <div style={S.headerActions}>
+          {/* Language selector */}
+          <select
+            id="language-selector"
+            value={i18n.language.split('-')[0]}
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+            aria-label="Select language"
+            style={{ ...S.stadiumSelect, maxWidth: 70, fontSize: '0.75rem', fontWeight: 600 }}
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
+
+          {/* Demo mode toggle */}
+          <DemoControls demoState={demoState} onStateChange={setDemoState} />
+
           <button
             type="button"
             style={S.themeBtn}
@@ -385,6 +419,8 @@ export default function App() {
       <main id="main-content" style={{ ...S.main, paddingTop: '0.75rem' }} role="main" aria-label="Active panel">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
           <OnboardingBanner />
+          {/* Live crowd heatmap — always visible on dashboard */}
+          <CrowdHeatmap telemetry={activeTelemetry} isConnected={isConnected} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
             <ErrorBoundary>
               <Suspense fallback={<LoadingSpinner label="Loading panel..." size="lg" />}>
@@ -395,6 +431,9 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      {/* Floating AI chat assistant */}
+      <AIChat />
     </div>
   );
 }

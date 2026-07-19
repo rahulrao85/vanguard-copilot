@@ -2,6 +2,20 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from '../src/App';
 
+// ── Mock i18next so App tests don't require i18n init ──────────────────────
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: vi.fn() },
+  }),
+  initReactI18next: { type: '3rdParty', init: vi.fn() },
+}));
+
+// ── Mock live telemetry (EventSource not available in jsdom) ───────────────
+vi.mock('../src/hooks/useTelemetry', () => ({
+  useTelemetry: vi.fn(() => ({ telemetry: null, isConnected: false, error: null })),
+}));
+
 let mockHealthStatus: string | null = null;
 let mockHealthError: boolean = false;
 
@@ -43,6 +57,7 @@ vi.mock('../src/store/useInsightsStore', () => ({
     clearInsights: vi.fn(),
   })),
 }));
+
 
 function setupDocument() {
   if (!document.documentElement.lang) {

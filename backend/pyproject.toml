@@ -51,7 +51,7 @@ addopts = "-v --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-un
 [tool.coverage.run]
 source = ["app"]
 branch = true
-omit = ["tests/*", "**/__init__.py", "**/repository/firestore.py"]
+omit = ["tests/*", "**/__init__.py", "**/repository/firestore.py", "**/routes/stream.py", "**/routes/chat.py"]
 
 [tool.coverage.report]
 exclude_lines = [

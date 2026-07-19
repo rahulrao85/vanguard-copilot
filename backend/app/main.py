@@ -16,6 +16,8 @@ from app.config import settings
 from app.exceptions import AppError
 from app.rate_limit import limiter
 from app.routes import calculate, entries, health, insights
+from app.routes.chat import router as chat_router
+from app.routes.stream import router as stream_router
 
 logger = logging.getLogger("vanguard")
 
@@ -166,6 +168,8 @@ app.include_router(calculate.router)
 app.include_router(entries.router)
 app.include_router(insights.router)
 app.include_router(health.router)
+app.include_router(chat_router)
+app.include_router(stream_router)
 
 
 @app.get("/", include_in_schema=False)
