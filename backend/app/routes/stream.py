@@ -4,6 +4,7 @@ SSE streaming routes for live telemetry and judge demo mode.
 
 import asyncio
 import json
+from collections.abc import AsyncIterator
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -13,7 +14,7 @@ from app.services.simulator import demo_mode, live_simulator
 router = APIRouter(prefix="/api", tags=["stream"])
 
 
-async def _telemetry_generator():
+async def _telemetry_generator() -> AsyncIterator[str]:
     """Yields SSE-formatted telemetry every 3 seconds."""
     while True:
         state = live_simulator.get_state()
@@ -22,7 +23,7 @@ async def _telemetry_generator():
 
 
 @router.get("/stream")
-async def telemetry_stream():
+async def telemetry_stream() -> StreamingResponse:
     """GET /api/stream — live telemetry SSE endpoint."""
     return StreamingResponse(
         _telemetry_generator(),

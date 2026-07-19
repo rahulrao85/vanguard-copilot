@@ -1,13 +1,12 @@
 """Tests for the stadium telemetry simulator."""
 
-import pytest
 from app.services.simulator import (
-    DeterministicMode,
-    StadiumSimulator,
-    GATE_IDS,
-    ZONE_IDS,
     CONCESSION_IDS,
     DEMO_SCRIPT,
+    GATE_IDS,
+    ZONE_IDS,
+    DeterministicMode,
+    StadiumSimulator,
 )
 
 

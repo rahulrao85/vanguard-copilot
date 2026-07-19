@@ -53,12 +53,15 @@ class GeminiService:
         if not self._configured:
             return self._mock_response(context_type, target_language, input_text, gate_data)
 
-        return await self._call_gemini_with_retry(
-            stadium_id,
-            context_type,
-            input_text,
-            target_language,
-            gate_data,
+        return cast(
+            dict[str, object],
+            await self._call_gemini_with_retry(
+                stadium_id,
+                context_type,
+                input_text,
+                target_language,
+                gate_data,
+            ),
         )
 
     @cached(ttl=300)

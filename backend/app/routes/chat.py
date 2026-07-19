@@ -4,6 +4,7 @@ Conversational AI chat route with SSE streaming responses.
 
 import asyncio
 import json
+from collections.abc import AsyncIterator
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -33,7 +34,7 @@ class ChatRequest(BaseModel):
     history: list[ChatMessage] = []
 
 
-async def _stream_chat(message: str, history: list[ChatMessage]):
+async def _stream_chat(message: str, history: list[ChatMessage]) -> AsyncIterator[str]:
     """Generator that streams OpenRouter response chunks as SSE."""
     import os
 

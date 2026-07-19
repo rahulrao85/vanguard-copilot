@@ -1,6 +1,5 @@
 """Tests for SSE stream and demo mode API routes."""
 
-import json
 import pytest
 from httpx import ASGITransport, AsyncClient
 

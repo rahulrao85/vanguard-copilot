@@ -1,6 +1,7 @@
 """Tests for the AI chat route."""
 
 import json
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -68,7 +69,7 @@ class TestChatRoute:
             json={"message": "Status update", "history": []},
         )
         lines = response.text.split("\n")
-        data_lines = [l for l in lines if l.startswith("data:") and "[DONE]" not in l]
+        data_lines = [ln for ln in lines if ln.startswith("data:") and "[DONE]" not in ln]
         for line in data_lines:
             payload = line[5:].strip()
             parsed = json.loads(payload)

@@ -7,12 +7,11 @@ Tests for error-handling paths and previously uncovered branches:
 """
 
 import json
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 import app.main as main_module
-from unittest.mock import AsyncMock, MagicMock, patch
-
 from app.deps import get_gemini_service, get_repository
 from app.main import app
 from app.models.schemas import GateData

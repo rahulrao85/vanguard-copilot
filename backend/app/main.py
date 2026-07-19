@@ -4,6 +4,7 @@ import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import cast
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -131,9 +132,9 @@ async def body_size_limit_middleware(
 
     async def new_receive() -> dict[str, object]:
         nonlocal body_length
-        message = await original_receive()
+        message = cast(dict[str, object], await original_receive())
         if message["type"] == "http.request":
-            body = message.get("body", b"")
+            body = cast(bytes, message.get("body", b""))
             body_length += len(body)
             if body_length > MAX_PAYLOAD_BYTES:
                 raise ValueError("Payload size limit exceeded")
