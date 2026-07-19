@@ -57,7 +57,14 @@ class EntryRequest(BaseModel):
     @field_validator("activity_type")
     @classmethod
     def validate_activity_type(cls, v: str) -> str:
-        valid_types = {"crowd_report", "incident_log", "shift_checkin", "facility_issue", "fan_assist", "other"}
+        valid_types = {
+            "crowd_report",
+            "incident_log",
+            "shift_checkin",
+            "facility_issue",
+            "fan_assist",
+            "other",
+        }
         if v not in valid_types:
             raise ValueError(f"activity_type must be one of: {', '.join(sorted(valid_types))}")
         return v

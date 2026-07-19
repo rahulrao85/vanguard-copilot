@@ -37,6 +37,7 @@ async def telemetry_stream():
 
 # ─── Demo / Judge Mode ────────────────────────────────────────
 
+
 @router.post("/demo/start")
 async def demo_start() -> JSONResponse:
     """Reset demo to step 0 and return initial state."""
@@ -68,8 +69,10 @@ async def demo_reset() -> JSONResponse:
 @router.get("/demo/status")
 async def demo_status() -> JSONResponse:
     """Return current demo step number and total steps."""
-    return JSONResponse(content={
-        "step": demo_mode.step,
-        "total_steps": demo_mode.total_steps,
-        "state": demo_mode.current_state(),
-    })
+    return JSONResponse(
+        content={
+            "step": demo_mode.step,
+            "total_steps": demo_mode.total_steps,
+            "state": demo_mode.current_state(),
+        }
+    )

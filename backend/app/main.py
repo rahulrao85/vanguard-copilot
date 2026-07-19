@@ -28,12 +28,13 @@ STATIC_DIR = Path("/app/static")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
-    
+
     # Set up Google Cloud Logging if running in Cloud Run environment
     is_cloud_run = os.getenv("K_SERVICE") is not None
     if is_cloud_run:
         try:
             import google.cloud.logging
+
             client = google.cloud.logging.Client()
             client.setup_logging()
             logger.info("Google Cloud Logging successfully configured.")

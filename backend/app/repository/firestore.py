@@ -45,10 +45,10 @@ class FirestoreRepository(AbstractRepository):
 
     async def get_entries_by_device(self, device_id: str) -> EntriesListResponse:
         """Query Firestore for all entries matching the given device_id."""
+
         def _query() -> list[EntryResponse]:
             docs = (
-                self._collection
-                .where("device_id", "==", device_id)
+                self._collection.where("device_id", "==", device_id)
                 .order_by("created_at", direction=firestore.Query.DESCENDING)
                 .stream()
             )

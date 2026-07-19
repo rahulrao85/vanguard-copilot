@@ -2,9 +2,6 @@ import asyncio
 import json
 from typing import cast
 
-from google import genai
-from google.genai import types
-
 from app.config import settings
 from app.models.schemas import GateData
 from app.services.cache import cached
@@ -31,14 +28,15 @@ When generating responses, follow these rules:
 
 def _sanitize_text(text: str, max_length: int = 5000) -> str:
     import re
+
     cleaned = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
     return cleaned.strip()[:max_length]
 
 
 class GeminiService:
-
     def __init__(self) -> None:
         import os
+
         self.api_key = os.environ.get("OPENROUTER_API_KEY") or settings.gemini_api_key
         self.model = "deepseek/deepseek-v4-flash"
         self._configured = self.api_key != ""
@@ -56,10 +54,12 @@ class GeminiService:
             return self._mock_response(context_type, target_language, input_text, gate_data)
 
         return await self._call_gemini_with_retry(
-            stadium_id, context_type, input_text, target_language, gate_data,
+            stadium_id,
+            context_type,
+            input_text,
+            target_language,
+            gate_data,
         )
-
-
 
     @cached(ttl=300)
     async def _call_gemini_with_retry(
@@ -97,13 +97,12 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
             "model": self.model,
             "messages": [
                 {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
+                {"role": "user", "content": user_prompt},
             ],
             "temperature": 0.3,
         }
 
-        last_error: Exception | None = None
-        
+
         # Unit testing mock compatibility check
         if hasattr(self._client, "models") and self._client is not self:
             try:
@@ -123,6 +122,7 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
         for attempt in range(MAX_RETRIES + 1):
             try:
                 import httpx
+
                 # Run synchronous HTTP POST in an async threadpool to keep FastAPI event loop free
                 async with httpx.AsyncClient() as client:
                     response = await client.post(
@@ -131,7 +131,7 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
                         json=payload,
                         timeout=float(GEMINI_TIMEOUT_SECONDS),
                     )
-                
+
                 response.raise_for_status()
                 data = response.json()
                 text = data["choices"][0]["message"]["content"]
@@ -152,14 +152,12 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
                 if attempt < MAX_RETRIES:
                     continue
                 return self._mock_response(context_type, target_language, input_text, gate_data)
-            except Exception as e:
-                last_error = e
+            except Exception:
                 if attempt < MAX_RETRIES:
                     await asyncio.sleep(1)
                     continue
 
         return self._mock_response(context_type, target_language, input_text, gate_data)
-
 
     def _format_gate_data(self, gates: list[GateData]) -> str:
         lines = []

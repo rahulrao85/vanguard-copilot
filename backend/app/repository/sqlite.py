@@ -63,8 +63,16 @@ class SqliteRepository(AbstractRepository):
         try:
             await conn.execute(
                 INSERT_ENTRY,
-                (entry_id, entry.device_id, entry.activity_type, entry.description,
-                 entry.location, entry.severity, now, "logged"),
+                (
+                    entry_id,
+                    entry.device_id,
+                    entry.activity_type,
+                    entry.description,
+                    entry.location,
+                    entry.severity,
+                    now,
+                    "logged",
+                ),
             )
             await conn.commit()
         finally:

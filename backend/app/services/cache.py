@@ -39,7 +39,9 @@ def cached(ttl: int = TTL) -> Callable[[Callable[..., Any]], Callable[..., Any]]
             result = await fn(*args, **kwargs)
             _cache[key] = (now, result)
             return result
+
         return wrapper
+
     return decorator
 
 
