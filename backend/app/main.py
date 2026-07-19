@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
@@ -25,6 +26,18 @@ STATIC_DIR = Path("/app/static")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
+    
+    # Set up Google Cloud Logging if running in Cloud Run environment
+    is_cloud_run = os.getenv("K_SERVICE") is not None
+    if is_cloud_run:
+        try:
+            import google.cloud.logging
+            client = google.cloud.logging.Client()
+            client.setup_logging()
+            logger.info("Google Cloud Logging successfully configured.")
+        except Exception as e:
+            logger.error(f"Failed to configure Google Cloud Logging: {e}")
+
     logger.info("Vanguard Co-Pilot starting — version 1.0.0")
     yield
     logger.info("Vanguard Co-Pilot shutting down")
@@ -93,22 +106,50 @@ async def body_size_limit_middleware(
     call_next: Callable[[Request], Awaitable[Response]],
 ) -> Response:
     content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            size = int(content_length)
+            if size > MAX_PAYLOAD_BYTES:
+                return JSONResponse(
+                    status_code=413,
+                    content={
+                        "detail": f"Request body exceeds {MAX_PAYLOAD_BYTES // 1024}KB limit",
+                        "error_code": "PAYLOAD_TOO_LARGE",
+                    },
+                )
+        except ValueError:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Invalid Content-Length header", "error_code": "BAD_REQUEST"},
+            )
+
+    body_length = 0
+    original_receive = request._receive
+
+    async def new_receive() -> dict[str, object]:
+        nonlocal body_length
+        message = await original_receive()
+        if message["type"] == "http.request":
+            body = message.get("body", b"")
+            body_length += len(body)
+            if body_length > MAX_PAYLOAD_BYTES:
+                raise ValueError("Payload size limit exceeded")
+        return message
+
+    request._receive = new_receive
+
     try:
-        size = int(content_length) if content_length else 0
-    except ValueError:
-        return JSONResponse(
-            status_code=400,
-            content={"detail": "Invalid Content-Length header", "error_code": "BAD_REQUEST"},
-        )
-    if size > MAX_PAYLOAD_BYTES:
-        return JSONResponse(
-            status_code=413,
-            content={
-                "detail": f"Request body exceeds {MAX_PAYLOAD_BYTES // 1024}KB limit",
-                "error_code": "PAYLOAD_TOO_LARGE",
-            },
-        )
-    return await call_next(request)
+        return await call_next(request)
+    except ValueError as e:
+        if str(e) == "Payload size limit exceeded":
+            return JSONResponse(
+                status_code=413,
+                content={
+                    "detail": f"Request body exceeds {MAX_PAYLOAD_BYTES // 1024}KB limit",
+                    "error_code": "PAYLOAD_TOO_LARGE",
+                },
+            )
+        raise
 
 
 app.add_middleware(GZipMiddleware, minimum_size=512)

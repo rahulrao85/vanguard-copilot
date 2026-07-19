@@ -1,3 +1,4 @@
+import os
 from app.config import settings
 from app.repository.base import AbstractRepository
 from app.repository.sqlite import SqliteRepository
@@ -10,7 +11,8 @@ _gemini_service_instance: GeminiService | None = None
 def _get_repository() -> AbstractRepository:
     global _repository_instance
     if _repository_instance is None:
-        if settings.firestore_emulator_host:
+        is_cloud_run = os.getenv("K_SERVICE") is not None
+        if settings.use_firestore or settings.firestore_emulator_host or is_cloud_run:
             from app.repository.firestore import FirestoreRepository
             _repository_instance = FirestoreRepository()
         else:

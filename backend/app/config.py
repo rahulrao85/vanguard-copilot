@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     firestore_emulator_host: str = ""
     firestore_collection: str = "entries"
+    use_firestore: bool = False
 
     rate_limit_requests: int = 30
     rate_limit_window: str = "1 minute"
