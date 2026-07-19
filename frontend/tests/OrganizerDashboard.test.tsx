@@ -10,8 +10,10 @@ vi.mock('react-i18next', () => ({
 }));
 
 const mockTelemetry = {
-  gates: { A: 45, B: 82 } as Record<string, number>,
-  totalOccupancy: 62,
+  gates: { A: 45, B: 82 },
+  phase: 1,
+  zones: {},
+  concessions: {},
   timestamp: Date.now(),
 };
 
@@ -42,7 +44,6 @@ describe('OrganizerDashboard', () => {
   it('shows gate rows from telemetry', () => {
     render(<OrganizerDashboard telemetry={mockTelemetry} isConnected={true} />);
     // 'A' appears in both heatmap grid and table — check within the table
-    const cells = screen.getAllByRole('gridcell');
     const tableGates = screen.getAllByText('A').filter(el => el.tagName === 'TD');
     expect(tableGates.length).toBe(1);
     expect(screen.getAllByText('B').length).toBeGreaterThanOrEqual(1);

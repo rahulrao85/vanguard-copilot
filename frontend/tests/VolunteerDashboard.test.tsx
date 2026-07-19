@@ -49,8 +49,10 @@ vi.mock('../src/store/useJuryStore', () => ({
 }));
 
 const mockTelemetry = {
-  gates: { A: 45 } as Record<string, number>,
-  totalOccupancy: 45,
+  gates: { A: 45 },
+  phase: 1,
+  zones: {},
+  concessions: {},
   timestamp: Date.now(),
 };
 

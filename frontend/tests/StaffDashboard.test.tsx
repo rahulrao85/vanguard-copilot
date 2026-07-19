@@ -10,8 +10,10 @@ vi.mock('react-i18next', () => ({
 }));
 
 const mockTelemetry = {
-  gates: { A: 45, B: 92, C: 78 } as Record<string, number>,
-  totalOccupancy: 72,
+  gates: { A: 45, B: 92, C: 78 },
+  phase: 1,
+  zones: {},
+  concessions: {},
   timestamp: Date.now(),
 };
 
