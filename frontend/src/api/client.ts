@@ -32,7 +32,7 @@ const entryRequestSchema = z.object({
 
 const insightsRequestSchema = z.object({
   stadium_id: z.string().min(1).max(128),
-  context_type: z.enum(['crowd_routing', 'fan_translation', 'facility_alert']),
+  context_type: z.enum(['crowd_routing', 'fan_translation', 'facility_alert', 'ticketing_support']),
   input_text: z.string().min(1).max(8192),
   target_language: z.string().min(2).max(10),
   gate_data: z.array(gateDataSchema).optional(),

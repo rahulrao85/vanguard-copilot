@@ -11,6 +11,8 @@ import json
 import pytest
 
 import app.main as main_module
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from app.deps import get_gemini_service, get_repository
 from app.main import app
 from app.models.schemas import GateData
@@ -106,6 +108,75 @@ class TestGeminiRealClientPath:
         gates[0].capacity = 0  # bypass validation to exercise the guard
         result = service._format_gate_data(gates)
         assert "0.0%" in result
+
+
+class TestHttpxRealClientPath:
+    """Test the actual httpx.AsyncClient code path via mocked HTTP."""
+
+    async def test_httpx_success_returns_parsed_json(self):
+        payload = {
+            "megaphone_script": "Go to Gate C",
+            "reasoning": "Gate A full",
+            "recommendations": ["Open Gate D"],
+        }
+        # httpx response methods (raise_for_status, json) are SYNC — use MagicMock, not AsyncMock
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": json.dumps(payload)}}]
+        }
+
+        service = GeminiService()
+        service._configured = True
+        service.api_key = "test-key"
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_response):
+            result = await service.generate_insights(
+                stadium_id="s1",
+                context_type="crowd_routing",
+                input_text="overcrowded",
+                target_language="en",
+                gate_data=[GateData(gate_id="g1", sensor_count=100, capacity=200)],
+            )
+        assert result["megaphone_script"] == "Go to Gate C"
+        assert result["recommendations"] == ["Open Gate D"]
+
+    async def test_httpx_http_error_falls_back_to_mock(self):
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = Exception("HTTP 500")
+
+        service = GeminiService()
+        service._configured = True
+        service.api_key = "test-key"
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_response):
+            result = await service.generate_insights(
+                stadium_id="s1",
+                context_type="facility_alert",
+                input_text="leak",
+                target_language="en",
+            )
+        assert "megaphone_script" in result
+
+    async def test_httpx_invalid_json_response_falls_back_to_mock(self):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "not valid json"}}]
+        }
+
+        service = GeminiService()
+        service._configured = True
+        service.api_key = "test-key"
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_response):
+            result = await service.generate_insights(
+                stadium_id="s1",
+                context_type="ticketing_support",
+                input_text="scanning error at Gate B",
+                target_language="en",
+            )
+        assert "megaphone_script" in result
 
 
 class _FailingGemini:

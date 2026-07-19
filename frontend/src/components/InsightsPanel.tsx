@@ -9,6 +9,7 @@ const CONTEXT_OPTIONS = [
   { value: 'crowd_routing', label: 'Crowd Routing' },
   { value: 'fan_translation', label: 'Fan Translation' },
   { value: 'facility_alert', label: 'Facility Alert' },
+  { value: 'ticketing_support', label: 'Ticketing Support' },
 ] as const;
 
 const S = {

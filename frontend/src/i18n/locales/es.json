@@ -1,45 +1,29 @@
 {
-  "nav": {
-    "dashboard": "Panel",
-    "insights": "Perspectivas de IA",
-    "calculator": "Calculadora",
-    "entries": "Entradas"
+  "nav": { "dashboard": "Panel", "insights": "Informes IA", "calculator": "Calculadora", "entries": "Registros" },
+  "common": { "submit": "Enviar", "cancel": "Cancelar", "loading": "Cargando...", "error": "Ocurrió un error", "clear": "Limpiar", "generate": "Generar Informes", "close": "Cerrar", "send": "Enviar" },
+  "ai": { "coach": "Co-Piloto IA", "ask": "Haz una pregunta...", "response": "Respuesta IA", "chat": "Asistente del Estadio", "chatPlaceholder": "Pregunta sobre multitudes, puertas o apoyo voluntario...", "generating": "Generando..." },
+  "stadium": { "gate": "Puerta", "crowd": "Multitud", "volunteer": "Voluntario", "capacity": "Capacidad", "occupancy": "Ocupación", "heatmap": "Mapa de Calor", "live": "Telemetría en Vivo", "demo": "Modo Demo", "step": "Paso" },
+  "demo": { "reset": "Reiniciar", "next": "Siguiente", "auto": "Auto", "stop": "Detener", "enable": "Activar Demo", "disable": "Desactivar Demo" },
+  "role": { "switch": "Cambiar rol", "fan": "Fanático", "organizer": "Organizador", "volunteer": "Voluntario", "staff": "Personal" },
+  "tab": { "understand": "Entender", "track": "Seguir", "reduce": "Reducir", "jury": "Carga de Jurado" },
+  "fan": {
+    "welcome": "Bienvenido a {{stadium}}",
+    "subtitle": "Tu acompañante del día del partido con IA. Navegación en tiempo real, recomendaciones de comida y guía de puertas.",
+    "stadiumInfo": "Información del Estadio", "capacity": "Capacidad", "location": "Ubicación", "matchRole": "Rol del Partido",
+    "quickActions": "Acciones Rápidas", "findFood": "Encontrar comida y bebidas", "nearbyGate": "Encontrar la puerta más rápida",
+    "transport": "Planificar tu ruta de transporte", "emergency": "Asistencia de emergencia y primeros auxilios",
+    "crowdStatus": "Estado de la Multitud en Vivo"
   },
-  "common": {
-    "submit": "Enviar",
-    "cancel": "Cancelar",
-    "loading": "Cargando...",
-    "error": "Ocurrió un error",
-    "clear": "Limpiar",
-    "generate": "Generar perspectivas",
-    "close": "Cerrar",
-    "send": "Enviar"
+  "org": {
+    "commandCenter": "Centro de Comando — {{stadium}}", "avgOccupancy": "Ocupación Promedio", "highTraffic": "Puertas con Alta Demanda",
+    "status": "Estado General", "venue": "Sede", "normal": "Normal", "moderate": "Moderado", "critical": "Crítico",
+    "crowdHeatmap": "Mapa de Calor de Multitudes", "incidents": "Panel de Puertas", "incidentList": "Lista de ocupación de puertas",
+    "gate": "Puerta", "occupancy": "Ocupación", "noData": "No hay datos de telemetría disponibles"
   },
-  "ai": {
-    "coach": "Co-Piloto IA",
-    "ask": "Haz una pregunta...",
-    "response": "Respuesta de IA",
-    "chat": "Asistente del Estadio",
-    "chatPlaceholder": "Pregunta sobre niveles de multitud, estado de puertas o apoyo a voluntarios...",
-    "generating": "Generando..."
-  },
-  "stadium": {
-    "gate": "Puerta",
-    "crowd": "Multitud",
-    "volunteer": "Voluntario",
-    "capacity": "Capacidad",
-    "occupancy": "Ocupación",
-    "heatmap": "Mapa de Calor",
-    "live": "Telemetría en Vivo",
-    "demo": "Modo Demo",
-    "step": "Paso"
-  },
-  "demo": {
-    "reset": "Reiniciar",
-    "next": "Siguiente",
-    "auto": "Auto",
-    "stop": "Detener",
-    "enable": "Activar Modo Demo",
-    "disable": "Desactivar Modo Demo"
+  "staff": {
+    "operationsHub": "Centro de Operaciones — {{stadium}}", "alerts": "Alertas Activas", "noAlerts": "Todas las puertas operan normalmente",
+    "alertMessage": "{{gate}} al {{occ}}% — se requiere despacho", "dispatch": "Comando de Despacho",
+    "dispatchLabel": "Mensaje de despacho", "dispatchPlaceholder": "Ej: Enviar equipo médico a Puerta C", "send": "Enviar",
+    "gateStatus": "Resumen de Puertas", "gateTable": "Tabla de estado de puertas"
   }
 }

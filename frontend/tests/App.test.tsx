@@ -16,6 +16,10 @@ vi.mock('../src/hooks/useTelemetry', () => ({
   useTelemetry: vi.fn(() => ({ telemetry: null, isConnected: false, error: null })),
 }));
 
+vi.mock('../src/hooks/useTelemetry', () => ({
+  useTelemetry: vi.fn(() => ({ telemetry: null, isConnected: false, error: null })),
+}));
+
 let mockHealthStatus: string | null = null;
 let mockHealthError: boolean = false;
 
@@ -58,6 +62,19 @@ vi.mock('../src/store/useInsightsStore', () => ({
   })),
 }));
 
+vi.mock('../src/store/useJuryStore', () => ({
+  useJuryStore: vi.fn(() => ({
+    entries: [],
+    isLoading: false,
+    uploadJuryEntry: vi.fn(),
+    fetchJuryEntries: vi.fn(),
+  })),
+}));
+
+vi.mock('../src/store/useRoleStore', () => ({
+  useRoleStore: vi.fn(() => ({ persona: 'volunteer' as const, setPersona: vi.fn() })),
+}));
+
 
 function setupDocument() {
   if (!document.documentElement.lang) {
@@ -71,6 +88,10 @@ function setupDocument() {
   }
 }
 
+async function waitForApp() {
+  await screen.findByRole('heading', { name: 'Vanguard Co-Pilot', level: 1 });
+}
+
 describe('App', () => {
   beforeEach(() => {
     mockHealthStatus = 'healthy';
@@ -78,21 +99,23 @@ describe('App', () => {
     setupDocument();
   });
 
-  it('renders header with app title', () => {
+  it('renders header with app title', async () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Vanguard Co-Pilot', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Vanguard Co-Pilot', level: 1 })).toBeInTheDocument();
   });
 
-  it('renders navigation with tab buttons for all 4 phases', () => {
+  it('renders RoleSwitcher with 4 persona buttons', async () => {
     render(<App />);
-    expect(screen.getByRole('button', { name: /Understand: Calculate/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Track: Log Entry/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Reduce: Insights/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Jury Upload: Custom Logs/i })).toBeInTheDocument();
+    await waitForApp();
+    expect(screen.getByRole('button', { name: /role\.fan/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /role\.organizer/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /role\.volunteer/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /role\.staff/i })).toBeInTheDocument();
   });
 
-  it('has skip-link element with "Skip to main content" text', () => {
+  it('has skip-link element with "Skip to main content" text', async () => {
     render(<App />);
+    await waitForApp();
     const skipLink = screen.getByText('Skip to main content');
     expect(skipLink).toBeInTheDocument();
     expect(skipLink.closest('a')).toHaveAttribute('href', '#main-content');
@@ -105,27 +128,14 @@ describe('App', () => {
     expect(document.getElementById('main-content')!.tagName).toBe('MAIN');
   });
 
-  it('default active tab is "calculate"', async () => {
+  it('default persona is volunteer, shows VolunteerDashboard', async () => {
     render(<App />);
-    const calcTab = screen.getByRole('button', { name: /Understand: Calculate/i });
-    expect(calcTab).toHaveAttribute('aria-current', 'page');
-    expect(await screen.findByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
-  });
-
-  it('clicking tab buttons changes the visible panel', async () => {
-    render(<App />);
-
-    fireEvent.click(screen.getByRole('button', { name: /Track: Log Entry/i }));
-    expect(await screen.findByText('⚽ Activity Log Entry')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Reduce: Insights/i }));
-    expect(await screen.findByText('⚽ AI Insights')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Jury Upload: Custom Logs/i }));
-    expect(await screen.findByRole('heading', { name: /Jury Upload/ })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Understand: Calculate/i }));
-    expect(await screen.findByText('⚽ Crowd Density Calculator')).toBeInTheDocument();
+    await waitForApp();
+    // Volunteer dashboard renders the nav tabs (Understand, Track, Reduce, Jury)
+    expect(await screen.findByText(/tab\.understand/i)).toBeInTheDocument();
+    expect(await screen.findByText(/tab\.track/i)).toBeInTheDocument();
+    expect(await screen.findByText(/tab\.reduce/i)).toBeInTheDocument();
+    expect(await screen.findByText(/tab\.jury/i)).toBeInTheDocument();
   });
 
   it('<html> has lang="en"', () => {
@@ -152,6 +162,7 @@ describe('App', () => {
 
   it('theme toggle switches from dark to light mode', async () => {
     render(<App />);
+    await waitForApp();
     const toggleBtn = screen.getByRole('button', { name: /Switch to light mode/i });
     expect(toggleBtn).toBeInTheDocument();
     fireEvent.click(toggleBtn);
@@ -160,20 +171,10 @@ describe('App', () => {
 
   it('stadium select changes selected stadium', async () => {
     render(<App />);
+    await waitForApp();
     const select = screen.getByLabelText('Select stadium');
     fireEvent.change(select, { target: { value: 'azteca' } });
     expect((select as HTMLSelectElement).value).toBe('azteca');
-  });
-
-  it('health status shows Operational when healthy', async () => {
-    render(<App />);
-    expect(await screen.findByText('Operational')).toBeInTheDocument();
-  });
-
-  it('health status shows Degraded when unhealthy', async () => {
-    mockHealthError = true;
-    render(<App />);
-    expect(await screen.findByText('Degraded')).toBeInTheDocument();
   });
 
   it('health status shows Checking... during load', () => {

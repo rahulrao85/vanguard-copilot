@@ -41,5 +41,60 @@
     "stop": "Stop",
     "enable": "Enable Demo Mode",
     "disable": "Disable Demo Mode"
+  },
+  "role": {
+    "switch": "Switch role",
+    "fan": "Fan",
+    "organizer": "Organizer",
+    "volunteer": "Volunteer",
+    "staff": "Staff"
+  },
+  "tab": {
+    "understand": "Understand",
+    "track": "Track",
+    "reduce": "Reduce",
+    "jury": "Jury Upload"
+  },
+  "fan": {
+    "welcome": "Welcome to {{stadium}}",
+    "subtitle": "Your AI-powered match-day companion. Get real-time navigation, food recommendations, and gate guidance.",
+    "stadiumInfo": "Stadium Information",
+    "capacity": "Capacity",
+    "location": "Location",
+    "matchRole": "Match Role",
+    "quickActions": "Quick Actions",
+    "findFood": "Find nearby food & drinks",
+    "nearbyGate": "Find the fastest gate entry",
+    "transport": "Plan your transport route",
+    "emergency": "Emergency assistance & first aid",
+    "crowdStatus": "Live Crowd Status"
+  },
+  "org": {
+    "commandCenter": "Command Center — {{stadium}}",
+    "avgOccupancy": "Avg Occupancy",
+    "highTraffic": "High Traffic Gates",
+    "status": "Overall Status",
+    "venue": "Venue",
+    "normal": "Normal",
+    "moderate": "Moderate",
+    "critical": "Critical",
+    "crowdHeatmap": "Live Crowd Heatmap",
+    "incidents": "Gate Status Board",
+    "incidentList": "Gate occupancy list",
+    "gate": "Gate",
+    "occupancy": "Occupancy",
+    "noData": "No telemetry data available"
+  },
+  "staff": {
+    "operationsHub": "Operations Hub — {{stadium}}",
+    "alerts": "Active Alerts",
+    "noAlerts": "All gates operating normally",
+    "alertMessage": "{{gate}} at {{occ}}% — dispatch required",
+    "dispatch": "Dispatch Command",
+    "dispatchLabel": "Dispatch message",
+    "dispatchPlaceholder": "e.g., Send medical team to Gate C",
+    "send": "Send",
+    "gateStatus": "Gate Status Overview",
+    "gateTable": "Gate status table"
   }
 }

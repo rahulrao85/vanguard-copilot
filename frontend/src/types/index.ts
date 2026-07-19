@@ -54,7 +54,7 @@ export interface EntriesListResponse {
 
 export interface InsightsRequest {
   stadium_id: string;
-  context_type: 'crowd_routing' | 'fan_translation' | 'facility_alert';
+  context_type: 'crowd_routing' | 'fan_translation' | 'facility_alert' | 'ticketing_support';
   input_text: string;
   target_language: string;
   gate_data?: GateData[];

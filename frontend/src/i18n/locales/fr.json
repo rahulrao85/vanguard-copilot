@@ -41,5 +41,38 @@
     "stop": "Arrêter",
     "enable": "Activer le Mode Démo",
     "disable": "Désactiver le Mode Démo"
+  },
+  "role": {
+    "switch": "Changer de rôle",
+    "fan": "Spectateur",
+    "organizer": "Organisateur",
+    "volunteer": "Bénévole",
+    "staff": "Personnel"
+  },
+  "tab": {
+    "understand": "Comprendre",
+    "track": "Suivre",
+    "reduce": "Réduire",
+    "jury": "Téléchargement Jury"
+  },
+  "fan": {
+    "welcome": "Bienvenue à {{stadium}}",
+    "subtitle": "Votre compagnon de match IA. Navigation en temps réel, recommandations alimentaires et guidage des portes.",
+    "stadiumInfo": "Informations du Stade", "capacity": "Capacité", "location": "Emplacement", "matchRole": "Rôle du Match",
+    "quickActions": "Actions Rapides", "findFood": "Trouver nourriture et boissons", "nearbyGate": "Trouver l'entrée la plus rapide",
+    "transport": "Planifier votre itinéraire", "emergency": "Assistance d'urgence et premiers secours",
+    "crowdStatus": "État de la foule en direct"
+  },
+  "org": {
+    "commandCenter": "Centre de Commandement — {{stadium}}", "avgOccupancy": "Occupation Moyenne", "highTraffic": "Portes à Fort Trafic",
+    "status": "État Général", "venue": "Lieu", "normal": "Normal", "moderate": "Modéré", "critical": "Critique",
+    "crowdHeatmap": "Carte de Chaleur des Foules", "incidents": "Tableau des Portes", "incidentList": "Liste d'occupation des portes",
+    "gate": "Porte", "occupancy": "Occupation", "noData": "Aucune donnée de télémétrie disponible"
+  },
+  "staff": {
+    "operationsHub": "Centre d'Opérations — {{stadium}}", "alerts": "Alertes Actives", "noAlerts": "Toutes les portes fonctionnent normalement",
+    "alertMessage": "{{gate}} à {{occ}}% — envoi requis", "dispatch": "Commande d'Envoi",
+    "dispatchLabel": "Message d'envoi", "dispatchPlaceholder": "Ex: Envoyer une équipe médicale à la Porte C", "send": "Envoyer",
+    "gateStatus": "Aperçu des Portes", "gateTable": "Tableau d'état des portes"
   }
 }

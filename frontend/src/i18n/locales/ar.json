@@ -42,5 +42,38 @@
     "stop": "إيقاف",
     "enable": "تفعيل وضع العرض",
     "disable": "إيقاف وضع العرض"
+  },
+  "role": {
+    "switch": "تغيير الدور",
+    "fan": "مشجع",
+    "organizer": "منظم",
+    "volunteer": "متطوع",
+    "staff": "طاقم"
+  },
+  "tab": {
+    "understand": "فهم",
+    "track": "تتبع",
+    "reduce": "تقليل",
+    "jury": "رفع هيئة المحلفين"
+  },
+  "fan": {
+    "welcome": "مرحبًا بك في {{stadium}}",
+    "subtitle": "مرافق يوم المباراة المدعوم بالذكاء الاصطناعي. إرشادات في الوقت الفعلي وتوصيات الطعام وتوجيه البوابات.",
+    "stadiumInfo": "معلومات الملعب", "capacity": "السعة", "location": "الموقع", "matchRole": "دور المباراة",
+    "quickActions": "إجراءات سريعة", "findFood": "ابحث عن الطعام والشراب", "nearbyGate": "ابحث عن أسرع بوابة دخول",
+    "transport": "خطط لطريق النقل الخاص بك", "emergency": "المساعدة في الطوارئ والإسعافات الأولية",
+    "crowdStatus": "حالة الحشود المباشرة"
+  },
+  "org": {
+    "commandCenter": "مركز القيادة — {{stadium}}", "avgOccupancy": "متوسط الإشغال", "highTraffic": "بوابات عالية الحركة",
+    "status": "الحالة العامة", "venue": "المكان", "normal": "طبيعي", "moderate": "معتدل", "critical": "حرج",
+    "crowdHeatmap": "خريطة حرارة الحشود المباشرة", "incidents": "لوحة حالة البوابات", "incidentList": "قائمة إشغال البوابات",
+    "gate": "بوابة", "occupancy": "الإشغال", "noData": "لا توجد بيانات تتبع متاحة"
+  },
+  "staff": {
+    "operationsHub": "مركز العمليات — {{stadium}}", "alerts": "التنبيهات النشطة", "noAlerts": "جميع البوابات تعمل بشكل طبيعي",
+    "alertMessage": "{{gate}} بنسبة {{occ}}% — يتطلب إرسال", "dispatch": "أمر الإرسال",
+    "dispatchLabel": "رسالة الإرسال", "dispatchPlaceholder": "مثال: أرسل فريقًا طبيًا إلى البوابة C", "send": "إرسال",
+    "gateStatus": "نظرة عامة على البوابات", "gateTable": "جدول حالة البوابات"
   }
 }
