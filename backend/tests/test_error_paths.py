@@ -372,7 +372,7 @@ class TestRateLimitHandler:
         # Hit the endpoint more than 30 times rapidly
         responses = []
         for _ in range(35):
-            responses.append(await async_client.get("/health"))
+            responses.append(await async_client.get("/api/health"))
         statuses = [r.status_code for r in responses]
         assert 429 in statuses or all(s == 200 for s in statuses)
 

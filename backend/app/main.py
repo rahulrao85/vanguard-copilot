@@ -186,5 +186,5 @@ async def serve_frontend(full_path: str = "") -> Response:
     if index.is_file():
         return FileResponse(str(index))
     return JSONResponse(
-        {"app": settings.app_name, "version": "1.0.0", "docs": "/docs", "health": "/health"},
+        {"app": settings.app_name, "version": "1.0.0", "docs": "/docs", "health": "/api/health"},
     )

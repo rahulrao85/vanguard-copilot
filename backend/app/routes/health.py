@@ -8,7 +8,7 @@ from app.deps import get_gemini_service, get_repository
 from app.repository.base import AbstractRepository
 from app.services.gemini import GeminiService
 
-router = APIRouter(tags=["health"])
+router = APIRouter(prefix="/api", tags=["health"])
 
 
 @router.get("/health", summary="Health check endpoint")

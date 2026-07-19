@@ -9,7 +9,7 @@ class TestSecurityHeaders:
     @pytest.mark.parametrize(
         "method,url,kwargs",
         [
-            ("get", "/health", {}),
+            ("get", "/api/health", {}),
             ("get", "/", {}),
             ("post", "/api/calculate", {"json": {"stadium_id": "S1", "gates": [{"gate_id": "G1", "sensor_count": 10, "capacity": 100}]}}),
             ("get", "/api/entries/device-1", {}),
@@ -23,21 +23,21 @@ class TestSecurityHeaders:
         assert response.headers.get("referrer-policy") == "no-referrer"
 
     async def test_content_security_policy_header_present(self, async_client):
-        response = await async_client.get("/health")
+        response = await async_client.get("/api/health")
         assert "content-security-policy" in response.headers
         csp = response.headers["content-security-policy"]
         assert "default-src" in csp
 
     async def test_x_content_type_options_is_nosniff(self, async_client):
-        response = await async_client.get("/health")
+        response = await async_client.get("/api/health")
         assert response.headers["x-content-type-options"] == "nosniff"
 
     async def test_x_frame_options_is_deny(self, async_client):
-        response = await async_client.get("/health")
+        response = await async_client.get("/api/health")
         assert response.headers["x-frame-options"] == "DENY"
 
     async def test_referrer_policy_is_no_referrer(self, async_client):
-        response = await async_client.get("/health")
+        response = await async_client.get("/api/health")
         assert response.headers["referrer-policy"] == "no-referrer"
 
 
@@ -64,7 +64,7 @@ class TestRootEndpoint:
     async def test_root_returns_health_link(self, async_client):
         response = await async_client.get("/")
         data = response.json()
-        assert data["health"] == "/health"
+        assert data["health"] == "/api/health"
 
 
 class TestBodySizeLimit:
