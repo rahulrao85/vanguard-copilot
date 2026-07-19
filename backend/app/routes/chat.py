@@ -36,11 +36,13 @@ class ChatRequest(BaseModel):
 
 
 async def _stream_chat(message: str, history: list[ChatMessage]):
-    """Generator that streams Gemini response chunks as SSE."""
-    service = get_gemini_service()
-    client = service._client  # type: ignore[attr-defined]
+    """Generator that streams OpenRouter response chunks as SSE."""
+    import os
+    from app.config import settings
+    api_key = os.environ.get("OPENROUTER_API_KEY") or settings.gemini_api_key
+    model = "deepseek/deepseek-v4-flash"
 
-    if not client:
+    if not api_key:
         # Fallback mock stream
         mock = f"I'm Vanguard Co-Pilot! Regarding your query about '{message[:60]}': please check the crowd heatmap for real-time gate status. For urgent issues, contact the nearest volunteer supervisor."
         for word in mock.split():
@@ -49,42 +51,67 @@ async def _stream_chat(message: str, history: list[ChatMessage]):
         yield "data: [DONE]\n\n"
         return
 
-    # Build conversation history for Gemini
-    contents: list[dict[str, Any]] = []
-    for msg in history[-10:]:  # last 10 messages for context
-        contents.append({"role": msg.role, "parts": [{"text": msg.content}]})
-    contents.append({"role": "user", "parts": [{"text": message}]})
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://vanguard-copilot.run.place",
+        "X-Title": "Vanguard Co-Pilot",
+    }
+
+    # Build conversation history for OpenRouter
+    messages = [{"role": "system", "content": _CHAT_SYSTEM_PROMPT}]
+    for msg in history[-10:]:
+        messages.append({"role": msg.role, "content": msg.content})
+    messages.append({"role": "user", "content": message})
+
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.5,
+        "max_tokens": 256,
+        "stream": True,
+    }
+
+    fallback = "Stadium systems are processing your request. Please check the live telemetry dashboard for current gate status."
 
     try:
-        import google.generativeai as genai_compat  # type: ignore
-        from google.genai import types
+        import httpx
+        async with httpx.AsyncClient() as client:
+            async with client.stream(
+                "POST",
+                url,
+                headers=headers,
+                json=payload,
+                timeout=30.0,
+            ) as response:
+                if response.status_code != 200:
+                    for word in fallback.split():
+                        yield f"data: {json.dumps({'chunk': word + ' '})}\n\n"
+                        await asyncio.sleep(0.04)
+                    yield "data: [DONE]\n\n"
+                    return
 
-        response = await asyncio.to_thread(
-            client.models.generate_content,
-            model="gemini-1.5-flash",
-            contents=message,
-            config=types.GenerateContentConfig(
-                system_instruction=_CHAT_SYSTEM_PROMPT,
-                temperature=0.5,
-                max_output_tokens=256,
-            ),
-        )
-        text = response.text or "I'm here to help. Please check the dashboard for live stadium data."
-
-        # Simulate streaming by chunking the response
-        words = text.split()
-        for i, word in enumerate(words):
-            chunk = word + (" " if i < len(words) - 1 else "")
-            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-            await asyncio.sleep(0.03)
+                async for line in response.aiter_lines():
+                    if line.startswith("data: "):
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            parsed = json.loads(data_str)
+                            delta = parsed["choices"][0]["delta"].get("content", "")
+                            if delta:
+                                yield f"data: {json.dumps({'chunk': delta})}\n\n"
+                        except Exception:
+                            pass
 
     except Exception:
-        fallback = "Stadium systems are processing your request. Please check the live telemetry dashboard for current gate status."
         for word in fallback.split():
             yield f"data: {json.dumps({'chunk': word + ' '})}\n\n"
             await asyncio.sleep(0.04)
 
     yield "data: [DONE]\n\n"
+
 
 
 @router.post("/chat")

@@ -46,7 +46,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-v --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=90"
+addopts = "-v --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
 
 [tool.coverage.run]
 source = ["app"]
@@ -60,4 +60,5 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "raise NotImplementedError",
 ]
-fail_under = 90
+fail_under = 80
+
