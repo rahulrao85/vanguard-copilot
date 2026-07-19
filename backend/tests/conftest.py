@@ -40,7 +40,6 @@ async def reset_globals():
 @pytest.fixture(autouse=True)
 def override_repository_dependency(memory_repo):
     """Use the in-memory repository for API tests so CI works without /app/data."""
-    original = get_repository
     app.dependency_overrides[get_repository] = lambda: memory_repo
     yield
     app.dependency_overrides.pop(get_repository, None)
