@@ -6,6 +6,7 @@ Provides shared test clients, repository instances, and mock data.
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.deps import get_repository
 from app.main import app
 from app.repository.memory import InMemoryRepository
 
@@ -34,6 +35,15 @@ async def reset_globals():
     yield
     deps._repository_instance = None
     deps._gemini_service_instance = None
+
+
+@pytest.fixture(autouse=True)
+def override_repository_dependency(memory_repo):
+    """Use the in-memory repository for API tests so CI works without /app/data."""
+    original = get_repository
+    app.dependency_overrides[get_repository] = lambda: memory_repo
+    yield
+    app.dependency_overrides.pop(get_repository, None)
 
 
 @pytest.fixture
