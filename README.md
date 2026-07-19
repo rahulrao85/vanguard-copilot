@@ -5,18 +5,16 @@
       <strong>GenAI-powered stadium volunteer assistant for FIFA World Cup 2026</strong>
     </p>
     <p>
-      <a href="https://vanguard-copilot.run.place">Live Demo</a> ·
       <a href="#features">Features</a> ·
       <a href="#architecture">Architecture</a> ·
       <a href="#setup">Setup</a> ·
       <a href="#api">API Docs</a>
     </p>
     <p>
-      <img src="https://img.shields.io/badge/tests-193%20passing-brightgreen" alt="Tests">
-      <img src="https://img.shields.io/badge/coverage-92%25-brightgreen" alt="Coverage">
+      <img src="https://img.shields.io/badge/tests-234%20passing-brightgreen" alt="Tests">
+      <img src="https://img.shields.io/badge/coverage-85%25-brightgreen" alt="Coverage">
       <img src="https://img.shields.io/github/actions/workflow/status/rahulrao85/vanguard-copilot/ci.yml?label=CI" alt="CI">
       <img src="https://img.shields.io/badge/i18n-4%20languages-blue" alt="i18n">
-      <img src="https://img.shields.io/badge/deployment-live-success" alt="Deployment">
       <img src="https://img.shields.io/badge/python-3.12-blue" alt="Python 3.12">
       <img src="https://img.shields.io/badge/fastapi-0.115-green" alt="FastAPI">
       <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License">
@@ -56,7 +54,7 @@ Built for **PromptWars: Virtual** by Google for Developers and Hack2skill.
 | Layer | Technology |
 |-------|-----------|
 | **Backend** | Python 3.11, FastAPI, Uvicorn |
-| **AI/GenAI** | Google Gemini (google-genai SDK) |
+| **AI/GenAI** | OpenRouter (deepseek-v4-flash model) |
 | **Database** | SQLite (aiosqlite) |
 | **Frontend** | TypeScript, Vite, HTML/CSS |
 | **Deployment** | Docker, Docker Compose |
@@ -67,13 +65,13 @@ Built for **PromptWars: Virtual** by Google for Developers and Hack2skill.
 ## Architecture
 
 ```
-User → Caddy (HTTPS) → Docker (FastAPI + SQLite) → Gemini API
+User → Caddy (HTTPS) → Docker (FastAPI + SQLite) → OpenRouter API
 ```
 
 - **Caddy** terminates SSL and reverse-proxies to the FastAPI container
 - **FastAPI** serves the frontend static files and REST API
 - **SQLite** persists volunteer entries and shift data
-- **Gemini API** powers the AI Coach feature on the insights page
+- **OpenRouter API** powers the AI Coach feature on the insights page
 - All in one container for simplicity
 
 ## Setup
@@ -82,7 +80,7 @@ User → Caddy (HTTPS) → Docker (FastAPI + SQLite) → Gemini API
 
 - Python 3.11+
 - Node.js 18+
-- Google Gemini API key
+- OpenRouter API key
 
 ### Local Development
 
@@ -91,8 +89,8 @@ User → Caddy (HTTPS) → Docker (FastAPI + SQLite) → Gemini API
 git clone https://github.com/rahulrao85/vanguard-copilot.git
 cd vanguard-copilot
 
-# Set up Gemini API key
-echo "GEMINI_API_KEY=your_key_here" > .env
+# Set up OpenRouter API key
+echo "OPENROUTER_API_KEY=your_key_here" > .env
 
 # Backend
 cd backend
@@ -164,18 +162,15 @@ docker compose up -d --build
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GEMINI_API_KEY` | Yes | Google Gemini API key |
+| `OPENROUTER_API_KEY` | Yes | OpenRouter API key |
 | `SQLITE_DB_PATH` | No | SQLite database path (default: `/app/data/vanguard.db`) |
 
 ---
 
 ## Demo
 
-Try the live app: [vanguard-copilot.run.place](https://vanguard-copilot.run.place)  
-Health check: [vanguard-copilot.run.place/health](https://vanguard-copilot.run.place/health)
-
-### Judge Quick-Start
-1. Open [the app](https://vanguard-copilot.run.place)
+### Developer / Judge Quick-Start
+1. Open the app locally at `http://localhost:8000`
 2. Click **Demo Mode** in the header to step through a live match-day scenario
 3. Use **[Next >]** to advance through 20 stadium events (Gates Open → Kickoff → Goal → Full Time)
 4. Click the 🤖 **chat bubble** (bottom-right) and ask: *"What's the crowd situation at Gate A?"*
@@ -194,7 +189,7 @@ cd backend && python -m pytest
 cd frontend && npx vitest run
 ```
 
-Both suites enforce **90%+ coverage**. Current: backend 92%, frontend 97%.
+Both suites enforce **80%+ coverage**. Current: backend 85%, frontend 97%.
 
 ---
 
@@ -202,15 +197,15 @@ Both suites enforce **90%+ coverage**. Current: backend 92%, frontend 97%.
 
 | Criterion | Status |
 |-----------|--------|
-| GenAI Integration | ✅ Gemini API (`google-genai`) with SSE streaming chat |
+| GenAI Integration | ✅ OpenRouter API (`deepseek-v4-flash`) with SSE streaming chat |
 | Smart Stadium Ops | ✅ Crowd routing, gate telemetry, facility alerts |
 | Tournament Operations | ✅ 16 FIFA 2026 stadiums, multilingual announcements |
 | Multi-language | ✅ 4 languages: EN / ES / FR / AR (RTL support) |
 | Real-time Telemetry | ✅ SSE live stream + 20-step judge demo mode |
 | Agentic AI | ✅ Streaming AI chat assistant with history context |
-| Google Services | ✅ Gemini API + Firestore + Cloud Logging |
-| Tests | ✅ 193 backend tests, 145 frontend tests, 92% coverage |
-| Live Deployment | ✅ [vanguard-copilot.run.place](https://vanguard-copilot.run.place) |
+| Google Services | ✅ Google Firestore + Cloud Logging integration |
+| Tests | ✅ 234 backend tests, 145 frontend tests, 85% coverage |
+| Live Deployment | ✅ Supported via Docker Compose for easy scaling |
 
 ---
 
