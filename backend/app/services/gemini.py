@@ -2,6 +2,8 @@ import asyncio
 import json
 from typing import cast
 
+from google import genai
+
 from app.config import settings
 from app.models.schemas import GateData
 from app.services.cache import cached
@@ -40,7 +42,11 @@ class GeminiService:
         self.api_key = os.environ.get("OPENROUTER_API_KEY") or settings.gemini_api_key
         self.model = "deepseek/deepseek-v4-flash"
         self._configured = self.api_key != ""
-        self._client = self
+
+        try:
+            self._client = genai.Client(api_key=self.api_key)
+        except Exception:
+            self._client = self
 
     async def generate_insights(
         self,
