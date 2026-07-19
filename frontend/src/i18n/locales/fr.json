@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "insights": "Analyses IA",
+    "calculator": "Calculatrice",
+    "entries": "Entrées"
+  },
+  "common": {
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "clear": "Effacer",
+    "generate": "Générer des analyses",
+    "close": "Fermer",
+    "send": "Envoyer"
+  },
+  "ai": {
+    "coach": "Co-Pilote IA",
+    "ask": "Posez une question...",
+    "response": "Réponse IA",
+    "chat": "Assistant du Stade",
+    "chatPlaceholder": "Renseignez-vous sur les niveaux de foule, l'état des portes ou le soutien aux bénévoles...",
+    "generating": "Génération en cours..."
+  },
+  "stadium": {
+    "gate": "Porte",
+    "crowd": "Foule",
+    "volunteer": "Bénévole",
+    "capacity": "Capacité",
+    "occupancy": "Occupation",
+    "heatmap": "Carte de Chaleur",
+    "live": "Télémétrie en Direct",
+    "demo": "Mode Démo",
+    "step": "Étape"
+  },
+  "demo": {
+    "reset": "Réinitialiser",
+    "next": "Suivant",
+    "auto": "Auto",
+    "stop": "Arrêter",
+    "enable": "Activer le Mode Démo",
+    "disable": "Désactiver le Mode Démo"
+  }
+}

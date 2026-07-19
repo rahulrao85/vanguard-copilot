@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "insights": "Perspectivas de IA",
+    "calculator": "Calculadora",
+    "entries": "Entradas"
+  },
+  "common": {
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "clear": "Limpiar",
+    "generate": "Generar perspectivas",
+    "close": "Cerrar",
+    "send": "Enviar"
+  },
+  "ai": {
+    "coach": "Co-Piloto IA",
+    "ask": "Haz una pregunta...",
+    "response": "Respuesta de IA",
+    "chat": "Asistente del Estadio",
+    "chatPlaceholder": "Pregunta sobre niveles de multitud, estado de puertas o apoyo a voluntarios...",
+    "generating": "Generando..."
+  },
+  "stadium": {
+    "gate": "Puerta",
+    "crowd": "Multitud",
+    "volunteer": "Voluntario",
+    "capacity": "Capacidad",
+    "occupancy": "Ocupación",
+    "heatmap": "Mapa de Calor",
+    "live": "Telemetría en Vivo",
+    "demo": "Modo Demo",
+    "step": "Paso"
+  },
+  "demo": {
+    "reset": "Reiniciar",
+    "next": "Siguiente",
+    "auto": "Auto",
+    "stop": "Detener",
+    "enable": "Activar Modo Demo",
+    "disable": "Desactivar Modo Demo"
+  }
+}

@@ -50,6 +50,8 @@ Thumbs.db
 *.json
 !frontend/tsconfig.json
 !frontend/package.json
+!frontend/package-lock.json
+!frontend/src/i18n/locales/*.json
 !backend/pyproject.toml
 
 # mypy

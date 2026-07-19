@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "insights": "AI Insights",
+    "calculator": "Calculator",
+    "entries": "Entries"
+  },
+  "common": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "clear": "Clear",
+    "generate": "Generate Insights",
+    "close": "Close",
+    "send": "Send"
+  },
+  "ai": {
+    "coach": "AI Co-Pilot",
+    "ask": "Ask a question...",
+    "response": "AI Response",
+    "chat": "Stadium Assistant",
+    "chatPlaceholder": "Ask about crowd levels, gate status, or volunteer support...",
+    "generating": "Generating..."
+  },
+  "stadium": {
+    "gate": "Gate",
+    "crowd": "Crowd",
+    "volunteer": "Volunteer",
+    "capacity": "Capacity",
+    "occupancy": "Occupancy",
+    "heatmap": "Crowd Heatmap",
+    "live": "Live Telemetry",
+    "demo": "Demo Mode",
+    "step": "Step"
+  },
+  "demo": {
+    "reset": "Reset",
+    "next": "Next",
+    "auto": "Auto",
+    "stop": "Stop",
+    "enable": "Enable Demo Mode",
+    "disable": "Disable Demo Mode"
+  }
+}
