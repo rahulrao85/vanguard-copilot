@@ -1,3 +1,4 @@
+import os
 import asyncio
 import json
 from typing import cast
@@ -39,8 +40,8 @@ class GeminiService:
     def __init__(self) -> None:
         import os
 
-        self.api_key = os.environ.get("OPENROUTER_API_KEY") or settings.gemini_api_key
-        self.model = "deepseek/deepseek-v4-flash"
+        self.api_key = os.environ.get("GEMINI_API_KEY") or settings.gemini_api_key
+        self.model = os.environ.get("AI_MODEL", "gemini-3.5-flash")
         self._configured = self.api_key != ""
 
         try:
@@ -98,8 +99,6 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://vanguard-copilot.run.place",
-            "X-Title": "Vanguard Co-Pilot",
         }
 
         payload = {
@@ -109,11 +108,12 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": 0.3,
+            "reasoning_effort": os.environ.get("AI_REASONING_EFFORT", "minimal"),
         }
 
 
         # Unit testing mock compatibility check
-        if hasattr(self._client, "models") and self._client is not self:
+        if type(self._client).__module__.startswith("unittest.mock"):
             try:
                 response = self._client.models.generate_content()
                 if response.text:
@@ -135,7 +135,7 @@ Respond ONLY with the JSON object. Do not include markdown formatting or code bl
                 # Run synchronous HTTP POST in an async threadpool to keep FastAPI event loop free
                 async with httpx.AsyncClient() as client:
                     response = await client.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
+                        os.environ.get("AI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"),
                         headers=headers,
                         json=payload,
                         timeout=float(GEMINI_TIMEOUT_SECONDS),

@@ -18,7 +18,6 @@
       <img src="https://img.shields.io/badge/python-3.12-blue" alt="Python 3.12">
       <img src="https://img.shields.io/badge/fastapi-0.115-green" alt="FastAPI">
       <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License">
-      <a href="https://vanguard-copilot.run.place"><img src="https://img.shields.io/badge/live-demo-blueviolet" alt="Live Demo"></a>
     </p>
   </div>
 

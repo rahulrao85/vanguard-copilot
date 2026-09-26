@@ -40,8 +40,8 @@ async def _stream_chat(message: str, history: list[ChatMessage]) -> AsyncIterato
 
     from app.config import settings
 
-    api_key = os.environ.get("OPENROUTER_API_KEY") or settings.gemini_api_key
-    model = "deepseek/deepseek-v4-flash"
+    api_key = os.environ.get("GEMINI_API_KEY") or settings.gemini_api_key
+    model = os.environ.get("AI_MODEL", "gemini-3.5-flash")
 
     if not api_key:
         # Fallback mock stream
@@ -56,12 +56,10 @@ async def _stream_chat(message: str, history: list[ChatMessage]) -> AsyncIterato
         yield "data: [DONE]\n\n"
         return
 
-    url = "https://openrouter.ai/api/v1/chat/completions"
+    url = os.environ.get("AI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://vanguard-copilot.run.place",
-        "X-Title": "Vanguard Co-Pilot",
     }
 
     # Build conversation history for OpenRouter
@@ -75,6 +73,7 @@ async def _stream_chat(message: str, history: list[ChatMessage]) -> AsyncIterato
         "messages": messages,
         "temperature": 0.5,
         "max_tokens": 256,
+        "reasoning_effort": os.environ.get("AI_REASONING_EFFORT", "minimal"),
         "stream": True,
     }
 
